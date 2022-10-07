@@ -4,8 +4,9 @@
 #include <vector>
 
 struct Arrays {
-	float vertices[20];
-	unsigned int indices[6];
+	float vertices[40];
+	unsigned int indices[12];
+
 };
 
 class VertexArray
@@ -15,6 +16,7 @@ public:
 	~VertexArray();
 
 	void init(struct Arrays A, int VBO_Array_Size, int EBO_Array_Size);
+	void init(float* vertices, int VBO_Array_Size, unsigned int* indices, int EBO_Array_Size);
 	void bind();
 	void bindBuffers(struct Arrays A, int VBO_Array_Size, int EBO_Array_Size);
 	void setVertexAttribPointersf(int layoutLocation, int sizeData, int stride, int offset);

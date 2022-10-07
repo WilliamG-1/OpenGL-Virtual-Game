@@ -118,6 +118,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Dev\OpenGlLighting\Extern;C:\CPPLibraries\OpenGL\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -149,8 +150,11 @@
     <ClCompile Include="Extern\Imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="Extern\Imgui\imgui_tables.cpp" />
     <ClCompile Include="Extern\Imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Src\Level.cpp" />
     <ClCompile Include="Src\ElementBuffer.cpp" />
-    <ClCompile Include="Src\Game.cpp" />
+    <ClCompile Include="Src\Game.cpp">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\CPPLibraries\OpenGL\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="Extern\glad.c" />
     <ClCompile Include="Src\Main.cpp" />
     <ClCompile Include="Src\Renderer.cpp" />
@@ -172,11 +176,12 @@
     <ClInclude Include="Extern\Imgui\imstb_rectpack.h" />
     <ClInclude Include="Extern\Imgui\imstb_textedit.h" />
     <ClInclude Include="Extern\Imgui\imstb_truetype.h" />
+    <ClInclude Include="Src\Level.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
     <ClInclude Include="Src\ElementBuffer.h" />
     <ClInclude Include="Src\Game.h" />
     <ClInclude Include="Src\Renderer.h" />
-    <ClInclude Include="Extern\resource.h" />
-    <ClInclude Include="Extern\resource1.h" />
     <ClInclude Include="Src\Shader.h" />
     <ClInclude Include="Extern\stb_image\stb_image.h" />
     <ClInclude Include="Src\Texture.h" />

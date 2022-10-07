@@ -5,21 +5,46 @@ Game::Game()
 	:
 	wrapper(), //wrapper2(),
 	VAO(), //VAO2(),
-	window(800, 600, "OpenGl Game"),
-	texture("Assets/Heart.png"),
+	window(1024, 768, "OpenGl Game"),
+	texture("Assets/Background/Blue.png"),
+	texture2("Assets/Tiles/GrassTile.png"),
 	model(1.0f), view(1.0f), proj(1.0f)
 {
 	// Copies 
-	copyArrToStruct<float>(wrapper, vertices, 20, ArrayType::VERTEX);
-	copyArrToStruct<unsigned int>(wrapper, indices, 6, ArrayType::ELEMENT);
-	
-	VAO.init(wrapper, sizeof(vertices) / sizeof(float), sizeof(indices) / sizeof(unsigned int));
+	//copyArrToStruct<float>(wrapper, vertices, 40, ArrayType::VERTEX);
+	//copyArrToStruct<unsigned int>(wrapper, indices, 12, ArrayType::ELEMENT);
+
+	float vertices[20] = {
+		// Vertex Coords			Texture Coords
+		000.0f, 704.0f, 0.0f,		0.0f, 0.0f,		// Bottom Left  (0)
+		064.0f, 704.0f, 0.0f,		1.0f, 0.0f,     // Bottom Right (1)
+		064.0f, 768.0f, 0.0f,		1.0f, 1.0f,     // Top Right    (2)
+		000.0f, 768.0f, 0.0f,		0.0f, 1.0f		// Top Left     (3)
+	};
+
+	unsigned int indices[6] = {
+		0, 1, 2,  2, 3, 0
+	};
+	//VAO.init(wrapper, sizeof(vertices) / sizeof(float), sizeof(indices) / sizeof(unsigned int));
+	VAO.init(vertices, sizeof(vertices) / sizeof(float), indices, sizeof(indices) / sizeof(unsigned int));
+
+	// VAO Layout location
+	// 3 coordinates, so size of 3 per attributes
+	// Total of 5 values (plus the texture) so 5 as stride
+	// 0 Offset to begn vertex coords
+
 	VAO.setVertexAttribPointersf(0, 3, 5, 0);
+	//VAO2.init(wrapper2, sizeof(vertices) / sizeof(float), sizeof(indices) / sizeof(unsigned int));
+	//VAO.setVertexAttribPointersf(0, 3, 5, 0);
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+	proj = glm::ortho(0.0f, 1024.0f, 0.0f, 768.0f, -1.0f, 1.0f);
+	//proj = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
 	view = glm::translate(model, glm::vec3(leftRightMove, 0.0f, 0.0f));
+	model = glm::mat4(1.0f);
+	board = level.get_board();
 }
 
 void Game::run()
@@ -34,7 +59,7 @@ void Game::run()
 
 		processInput();
 		// Clear Screen
-		glClearColor(0.0f, 0.0f, 0.01f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		
@@ -42,31 +67,60 @@ void Game::run()
 		ImGui::Begin("Window");
 		ImGui::Text("Selection Screen OmegaLol");
 		ImGui::Checkbox("Draw Triangle", &drawTriangle);
-		ImGui::SliderFloat("Move Left & Right", &leftRightMove, -2.0f, 2.0f);
-		ImGui::SliderFloat("Scale Image", &scaleRate, 0.0f, 3.0f);
-		ImGui::End();
+		ImGui::SliderFloat("Move Left & Right", &leftRightMove, 0.0f, 960.0f);
 
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		
+
+		ImGui::End();	
 		// <---------------- Rendering Code --------------------> \\
 
 		
-		if (drawTriangle) {
-			texture.bind();
-			renderer.draw(VAO, shader);
+		view = glm::translate(model, glm::vec3(leftRightMove, 0.0f, 0.0f));
+		glm::mat4 MVP = model * proj * view;
+
+		shader.setUniformMat4f("u_MVP", MVP);
+		
+		if (drawTriangle)
+		{
+			bool drawBackground = true;
+			for (int r = 0; r < level.get_rows(); r++)
+			{
+				for (int c = 0; c < level.get_columns(); c++)
+				{
+					view = glm::translate(model, glm::vec3(leftRightMove + (64 * c), -(64 * r), 0.0f));
+					MVP = model * proj * view;
+					shader.setUniformMat4f("u_MVP", MVP);
+
+					if (board[c + (r * level.get_columns())] == 'X')
+					{
+						texture2.setVertAttribs(1, 2, 5, 3);
+						texture2.bind();
+						shader.use();
+						drawBackground = false;
+					}
+					if (board[c + (r * level.get_columns())] == '0')
+					{
+						texture.setVertAttribs(1, 2, 5, 3);
+						texture.bind();
+						shader.use();
+						drawBackground = false;
+					}
+					
+					renderer.draw(VAO, shader);
+				}
+			}
 		}
 		
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		// Switch buffers lol
 		glfwSwapBuffers(window.getWindow());
 
 		// ---------------- Changing Code -------------------- \\
+		
 
-		view = glm::translate(model, glm::vec3(leftRightMove, 0.0f, 0.0f));	
-		view = glm::scale(model, glm::vec3(scaleRate, scaleRate, scaleRate));
+		
 
-		glm::mat4 MVP = model * proj * view;
-		shader.setUniformMat4f("u_MVP", MVP);
+
 	}
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
@@ -86,22 +140,13 @@ void Game::processInput()
 
 void Game::composeFrame()
 {
-
+	
 	glm::mat4 MVP = model * proj * view;
-	float vertices2[] =
-	{
-		0.6f, 0.6f, -5.0f, // Bottom Left
-		0.6f, 0.8f,  0.0f, // Top Left
-		0.9f, 0.6f,  0.0f
 
-	};
-	unsigned int indices2[] =
-	{
-		0, 1, 2
-	};
 
 	texture.init();
 	texture.setVertAttribs(1, 2, 5, 3);
+	texture2.init();
 
 	std::string vertSource;
 	std::string fragSource;
@@ -118,7 +163,11 @@ void Game::composeFrame()
 
 
 	texture.bind();
+	
+	
+	MVP = model * proj * view;
 	// <-------------------- Uniform Stuff ------------------------> \\
+	
 
 	shader.setUniform1i("u_Texture", 0);
 	shader.setUniformMat4f("u_MVP", MVP);

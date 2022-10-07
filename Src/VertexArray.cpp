@@ -34,6 +34,21 @@ void VertexArray::init(struct Arrays A, int VBO_Array_Size, int EBO_Array_Size)
 	VertexArray::EBO_Count++;
 }
 
+void VertexArray::init(float* vertices, int VBO_Array_Size, unsigned int* indices, int EBO_Array_Size)
+{
+	glGenVertexArrays(1, &vertexArrayObject);
+	glBindVertexArray(vertexArrayObject);
+
+	VertexBuffer VBO;
+	ElementBuffer EBO;
+	
+	VBO_Container.push_back(VBO);
+	EBO_Container.push_back(EBO);
+
+	VBO_Container[0].init(vertices, VBO_Array_Size);
+	EBO_Container[0].init(indices, EBO_Array_Size);
+}
+
 void VertexArray::bindBuffers(struct Arrays A, int VBO_Array_Size, int EBO_Array_Size)
 {
 	// Bind this-> VAO, so future bounds belong to this vao
