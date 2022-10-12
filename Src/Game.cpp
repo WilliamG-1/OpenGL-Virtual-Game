@@ -1,6 +1,7 @@
 #include "Game.h"
 #include <iostream>
-
+#define WIDNOW_WIDTH = 1024.0F
+#define WINDOW_HEIGHT = 768.0F
 Game::Game()
 	:
 	wrapper(), player(128.0f, 500.0f, 32.0f, 64.0f),
@@ -9,7 +10,6 @@ Game::Game()
 	texture("Assets/Background/Green.png"),
 	texture2("Assets/Tiles/GrassTile.png"),
 	playerTex("Assets/Virtual Guy/Idle/Idle00.png"),
-	//idleAnimation(10, std::move(Texture("Assets/Background/Idle01.png"))),
 	model(1.0f), view(1.0f), proj(1.0f),
 	MVP_Scene(1.0f), MVP_Player(1.0f), 
 	playerModel(1.0f), playerView(1.0f)
@@ -24,7 +24,10 @@ Game::Game()
 		0, 1, 2,  2, 3, 0
 	};
 	//VAO.init(wrapper, siz eof(vertices) / sizeof(float), sizeof(indices) / sizeof(unsigned int));
-	VAO.init(vertices, sizeof(vertices) / sizeof(float), indices, sizeof(indices) / sizeof(unsigned int));
+	float a[20];
+	//tileVert = zArrayConverter::convert_coordinates_to_vert_tex_array(a, backgroundTile.getX(), backgroundTile.getY(), backgroundTile.getWidth(), backgroundTile.getHeight(), 0.0f, 0.0f, 1.0f, 1.0f);
+	tileVert = zArrayConverter::convert_coordinates_to_vert_tex_array(a, 0.0f, 704.0f, 64.0f, 64.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	VAO.init(tileVert, 20, indices, sizeof(indices) / sizeof(unsigned int));
 	// VAO Layout location
 	// 3 coordinates, so size of 3 per attributes
 	// Total of 5 values (plus the texture) so 5 as stride
@@ -33,8 +36,8 @@ Game::Game()
 	
 
 	//  Player Stuff
-	float a[20];
-	float* playerVert = zArrayConverter::convert_coordinates_to_vert_tex_array(a, 0.0f, 0.0f, 64.0f, 64.0f, 0.125f, 0.0f, 0.75f, 0.825f );
+	float b[20];
+	playerVert = zArrayConverter::convert_coordinates_to_vert_tex_array(b, 0.0f, 0.0f, 64.0f, 64.0f, 0.125f, 0.0f, 0.75f, 0.825f );
 
 	VAOPlayer.init(playerVert, 20, indices2, sizeof(indices2) / sizeof(unsigned int));
 	VAOPlayer.setVertexAttribPointersf(0, 3, 5, 0);
@@ -54,6 +57,8 @@ Game::Game()
 		ptr->setVertAttribs(1, 2, 5, 3);
 	}
 
+	
+	
 	//for (int i = 0; i < 9; i++)
 	//{
 	//	// Convert integer to string
@@ -87,6 +92,29 @@ Game::Game()
 	MVP_Scene = model * proj * view;
 	MVP_Player = playerModel * proj * playerView;
 	board = level.get_board();
+
+	for (int r = 0; r < level.get_rows(); r++)
+	{
+		for (int c = 0; c < level.get_columns(); c++)
+		{
+			if (board[c + (r * level.get_columns())] == 'X')
+			{
+				grassTiles.push_back(std::move(std::make_unique<Tile>(c * 64, 704.0f -(r * 64), 64.0f, 64.0f)));
+			}
+
+		}
+	}
+	for (int i = 0; i < 20; i++)
+	{
+		std::cout << vertices[i] << std::endl;
+	}
+	for (int i = 0; i < 20; i++)
+	{
+		std::cout << tileVert[i] << std::endl;
+	}
+
+	for (auto& u_ptr : grassTiles)
+		std::cout << "Tile x :" << u_ptr->getX() << ", Tile y: " << u_ptr->getY() << std::endl;
 }
 
 void Game::run()
@@ -158,18 +186,33 @@ void Game::run()
 		if (currentFrame > 9.9)
 			currentFrame = 0.0f;
 		renderer.draw(VAOPlayer, shader);
-
-		if (!player.is_moving())
-			std::cout << "Player standing still!" << std::endl;
-		else {
-			if (player.is_moving_right())
-				std::cout << "Moving Right" << std::endl;
-			if (player.is_moving_left())
-				std::cout << "Moving Left" << std::endl;
-			if (player.is_jumping())
-				std::cout << "Player \"Jumping\"" << std::endl;
-			if (player.is_falling())
-				std::cout << "Player is \"Falling\"" << std::endl;
+		if (currentFrame == .115f)
+			std::cout << " NO collision" << std::endl;
+		
+		//std::cout << "Player x: " << player.getX() << "Player y: " << player.getY() << std::endl;
+		//if (!player.is_moving())
+		//	std::cout << "Player standing still!" << std::endl;
+		//else {
+		//	if (player.is_moving_right())
+		//		std::cout << "Moving Right" << std::endl;
+		//	if (player.is_moving_left())
+		//		std::cout << "Moving Left" << std::endl;
+		//	if (player.is_jumping())
+		//		std::cout << "Player \"Jumping\"" << std::endl;
+		//	if (player.is_falling())
+		//		std::cout << "Player is \"Falling\"" << std::endl;
+		//}
+		//
+		for (auto& ptr : grassTiles)
+		{
+			if (Physics::entity_left_collide_right_tile(player, *ptr))
+				std::cout << "Collision from left to right!" << std::endl;
+			//if (Physics::entity_right_collide_left_tile(player, *ptr))
+			//	std::cout << "Collision from right to left!" << std::endl;
+			//if (Physics::entity_top_collide_bottom_tile(player, *ptr))
+			//	std::cout << "Collision from top to bottom!" << std::endl;
+			//if (Physics::entity_bottom_collide_top_tile(player, *ptr))
+			//	std::cout << "Collision from bottom to top!" << std::endl;
 		}
 		
 		
@@ -182,9 +225,9 @@ void Game::run()
 
 		// ---------------- Changing Code -------------------- \\
 		
-		leftRightMove -= 1.0f;
-		if (leftRightMove <= -(level.get_columns() * 32) + 100)
-			leftRightMove = 0;
+		//leftRightMove -= 1.0f;
+		//if (leftRightMove <= -(level.get_columns() * 32) + 100)
+			//leftRightMove = 0;
 
 		
 
@@ -233,10 +276,6 @@ void Game::composeFrame()
 	texture.setVertAttribs(1, 2, 5, 3);
 	texture2.init();
 	texture2.setVertAttribs(1, 2, 5, 3);
-
-	VAOPlayer.bufferVertexData(20, vertices2);
-
-	
 
 	std::string vertSource;
 	std::string fragSource;

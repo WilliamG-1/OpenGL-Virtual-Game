@@ -46,19 +46,9 @@ void Entity::moveY(float dy)
 	if (dy == 0)
 	{
 		movement[static_cast<int>(MoveState::JUMPING)] = false;
-		movement[static_cast<int>(MoveState::FALLING)] = true;
+		movement[static_cast<int>(MoveState::FALLING)] = false;
 	}
 	y += dy;
-}
-
-float Entity::getX() const
-{
-	return x;
-}
-
-float Entity::getY() const
-{
-	return y;
 }
 
 bool Entity::is_moving_left() const
@@ -83,10 +73,30 @@ bool Entity::is_falling() const
 
 bool Entity::is_moving()
 {
-	for (int i = 1; i < 4; i++)
+	for (int i = 1; i < 5; i++)
 	{
 		if (movement[i])
 			return true;
 	}
 	return false;
+}
+
+float Entity::getX() const
+{
+	return x;
+}
+
+float Entity::getY() const
+{
+	return y;
+}
+
+float Entity::getWidth() const
+{
+	return width;
+}
+
+float Entity::getHeight() const
+{
+	return height;
 }

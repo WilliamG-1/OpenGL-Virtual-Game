@@ -1,15 +1,17 @@
 #pragma once
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <memory>
 #include "Window.h"
 #include "Shader.h"
 #include "Renderer.h"
 #include "Texture.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include "Level.h"
 #include "Player.h"
-#include <memory>
 #include "zArrayConverter.h"
 #include "Tile.h"
+#include "Physics.h"
+
 enum class ArrayType {
 	VERTEX = 0, ELEMENT
 };
@@ -34,13 +36,13 @@ private:
 	VertexArray VAO;
 	VertexArray VAOPlayer;
 	Level level;
-	Tile backgroundTitle;
-	Tile grassTile;
+	Tile backgroundTile;
 	Texture texture;
 	Texture texture2;
 	Texture playerTex;
 	//std::vector<Texture> idleAnimation;
 	std::vector<std::unique_ptr<Texture>> frames;
+	std::vector<std::unique_ptr<Tile>> grassTiles;
 
 	float currentFrame = 0;
 
@@ -66,7 +68,8 @@ private:
 		64.0f, 64.0f, 0.0f,		0.875f, 0.825f,	 // Top Right    (2)
 		00.0f, 64.0f, 0.0f,		0.125f, 0.825f	 // Top Left     (3)
 	};
-	
+	float* tileVert;
+	float* playerVert;
 	void composeFrame();
 	bool gameRunning = true;
 	bool drawTriangle = true;

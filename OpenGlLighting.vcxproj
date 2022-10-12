@@ -150,6 +150,9 @@
     <ClCompile Include="Extern\Imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="Extern\Imgui\imgui_tables.cpp" />
     <ClCompile Include="Extern\Imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Src\Entity.cpp" />
+    <ClCompile Include="Src\Physics.cpp" />
+    <ClCompile Include="Src\Player.cpp" />
     <ClCompile Include="Src\Level.cpp" />
     <ClCompile Include="Src\ElementBuffer.cpp" />
     <ClCompile Include="Src\Game.cpp">
@@ -161,9 +164,11 @@
     <ClCompile Include="Src\Shader.cpp" />
     <ClCompile Include="Extern\stb_image\stb_image.cpp" />
     <ClCompile Include="Src\Texture.cpp" />
+    <ClCompile Include="Src\Tile.cpp" />
     <ClCompile Include="Src\VertexArray.cpp" />
     <ClCompile Include="Src\VertexBuffer.cpp" />
     <ClCompile Include="Src\Window.cpp" />
+    <ClCompile Include="Src\zArrayConverter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Downloads\imgui-1.88\imgui-1.88\backends\imgui_impl_opengl3_loader.h" />
@@ -176,6 +181,9 @@
     <ClInclude Include="Extern\Imgui\imstb_rectpack.h" />
     <ClInclude Include="Extern\Imgui\imstb_textedit.h" />
     <ClInclude Include="Extern\Imgui\imstb_truetype.h" />
+    <ClInclude Include="Src\Entity.h" />
+    <ClInclude Include="Src\Physics.h" />
+    <ClInclude Include="Src\Player.h" />
     <ClInclude Include="Src\Level.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="resource1.h" />
@@ -185,9 +193,11 @@
     <ClInclude Include="Src\Shader.h" />
     <ClInclude Include="Extern\stb_image\stb_image.h" />
     <ClInclude Include="Src\Texture.h" />
+    <ClInclude Include="Src\Tile.h" />
     <ClInclude Include="Src\VertexArray.h" />
     <ClInclude Include="Src\VertexBuffer.h" />
     <ClInclude Include="Src\Window.h" />
+    <ClInclude Include="Src\zArrayConverter.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Extern\example_glfw_opengl3\example_glfw_opengl3.vcxproj" />

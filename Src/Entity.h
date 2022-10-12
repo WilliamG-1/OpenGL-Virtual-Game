@@ -16,14 +16,16 @@ public:
 	void moveX(float dx);
 	void moveY(float dy);
 
-	float getX() const;
-	float getY() const;
-
 	bool is_moving_left() const;
 	bool is_moving_right() const;
 	bool is_jumping() const;
 	bool is_falling() const;
 	bool is_moving();
+
+	float getX() const;
+	float getY() const;
+	float getWidth() const;
+	float getHeight() const;
 private:
 	MoveState move_state;
 	std::vector<bool> movement = { 0, 0, 0, 0, 0 };
