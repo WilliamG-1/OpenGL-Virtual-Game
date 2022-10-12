@@ -3,47 +3,89 @@
 
 Game::Game()
 	:
-	wrapper(), //wrapper2(),
-	VAO(), //VAO2(),
+	wrapper(), player(128.0f, 500.0f, 32.0f, 64.0f),
+	VAO(), // VAOPlayer(),
 	window(1024, 768, "OpenGl Game"),
-	texture("Assets/Background/Blue.png"),
+	texture("Assets/Background/Green.png"),
 	texture2("Assets/Tiles/GrassTile.png"),
-	model(1.0f), view(1.0f), proj(1.0f)
+	playerTex("Assets/Virtual Guy/Idle/Idle00.png"),
+	//idleAnimation(10, std::move(Texture("Assets/Background/Idle01.png"))),
+	model(1.0f), view(1.0f), proj(1.0f),
+	MVP_Scene(1.0f), MVP_Player(1.0f), 
+	playerModel(1.0f), playerView(1.0f)
 {
-	// Copies 
-	//copyArrToStruct<float>(wrapper, vertices, 40, ArrayType::VERTEX);
-	//copyArrToStruct<unsigned int>(wrapper, indices, 12, ArrayType::ELEMENT);
-
-	float vertices[20] = {
-		// Vertex Coords			Texture Coords
-		000.0f, 704.0f, 0.0f,		0.0f, 0.0f,		// Bottom Left  (0)
-		064.0f, 704.0f, 0.0f,		1.0f, 0.0f,     // Bottom Right (1)
-		064.0f, 768.0f, 0.0f,		1.0f, 1.0f,     // Top Right    (2)
-		000.0f, 768.0f, 0.0f,		0.0f, 1.0f		// Top Left     (3)
-	};
-
+	
+	//idleAnimation.push_back(Texture("Assets/Virtual Guy/Idle/Idle10.png"));
+	
 	unsigned int indices[6] = {
 		0, 1, 2,  2, 3, 0
 	};
-	//VAO.init(wrapper, sizeof(vertices) / sizeof(float), sizeof(indices) / sizeof(unsigned int));
+	unsigned int indices2[6] = {
+		0, 1, 2,  2, 3, 0
+	};
+	//VAO.init(wrapper, siz eof(vertices) / sizeof(float), sizeof(indices) / sizeof(unsigned int));
 	VAO.init(vertices, sizeof(vertices) / sizeof(float), indices, sizeof(indices) / sizeof(unsigned int));
-
 	// VAO Layout location
 	// 3 coordinates, so size of 3 per attributes
 	// Total of 5 values (plus the texture) so 5 as stride
 	// 0 Offset to begn vertex coords
-
 	VAO.setVertexAttribPointersf(0, 3, 5, 0);
-	//VAO2.init(wrapper2, sizeof(vertices) / sizeof(float), sizeof(indices) / sizeof(unsigned int));
-	//VAO.setVertexAttribPointersf(0, 3, 5, 0);
+	
 
+	//  Player Stuff
+	float a[20];
+	float* playerVert = zArrayConverter::convert_coordinates_to_vert_tex_array(a, 0.0f, 0.0f, 64.0f, 64.0f, 0.125f, 0.0f, 0.75f, 0.825f );
+
+	VAOPlayer.init(playerVert, 20, indices2, sizeof(indices2) / sizeof(unsigned int));
+	VAOPlayer.setVertexAttribPointersf(0, 3, 5, 0);
+	
+	playerTex.init();
+	playerTex.setVertAttribs(1, 2, 5, 3);
+
+	for (int i = 0; i < 9; i++)
+	{
+		std::string s = std::to_string(i);
+		frames.push_back(std::move(std::make_unique<Texture>("Assets/Virtual Guy/Idle/Idle0" + s + ".png")));
+	}
+	frames.push_back(std::move(std::make_unique<Texture>("Assets/Virtual Guy/Idle/Idle10.png")));
+	for (auto& ptr : frames)
+	{
+		ptr->init();
+		ptr->setVertAttribs(1, 2, 5, 3);
+	}
+
+	//for (int i = 0; i < 9; i++)
+	//{
+	//	// Convert integer to string
+	//	std::string num = std::to_string(i);
+	//	std::cout << "The number is: " << num << std::endl;
+	//	Texture texture("Assets/Virtual Guy/Idle/Idle01.png");
+	//	//texture.init();
+	//	//texture.setVertAttribs(1, 2, 5, 3);
+	//	idleAnimation[i] = std::move(texture);
+	//
+	//}
+	//for (Texture& t : idleAnimation)
+	//{
+	//	t.init();
+	//	t.setVertAttribs(1, 2, 5, 3);
+	//}
+	//idleAnimation[9] = playerTex;
+	//idleAnimation[4] = playerTex;
+		
+	//playerTex.init();
+	//playerTex.setVertAttribs(1, 2, 5, 3);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	proj = glm::ortho(0.0f, 1024.0f, 0.0f, 768.0f, -1.0f, 1.0f);
-	//proj = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
+
 	view = glm::translate(model, glm::vec3(leftRightMove, 0.0f, 0.0f));
-	model = glm::mat4(1.0f);
+
+	playerView = glm::translate(model, glm::vec3(player.getX(), player.getY(), 0.0f));
+	
+	MVP_Scene = model * proj * view;
+	MVP_Player = playerModel * proj * playerView;
 	board = level.get_board();
 }
 
@@ -67,7 +109,7 @@ void Game::run()
 		ImGui::Begin("Window");
 		ImGui::Text("Selection Screen OmegaLol");
 		ImGui::Checkbox("Draw Triangle", &drawTriangle);
-		ImGui::SliderFloat("Move Left & Right", &leftRightMove, 0.0f, 960.0f);
+		ImGui::SliderFloat("Move Left & Right", &leftRightMove, 960.0f, -960.0f);
 
 
 		ImGui::End();	
@@ -75,9 +117,9 @@ void Game::run()
 
 		
 		view = glm::translate(model, glm::vec3(leftRightMove, 0.0f, 0.0f));
-		glm::mat4 MVP = model * proj * view;
+		
 
-		shader.setUniformMat4f("u_MVP", MVP);
+		shader.setUniformMat4f("u_MVP", MVP_Scene);
 		
 		if (drawTriangle)
 		{
@@ -87,29 +129,52 @@ void Game::run()
 				for (int c = 0; c < level.get_columns(); c++)
 				{
 					view = glm::translate(model, glm::vec3(leftRightMove + (64 * c), -(64 * r), 0.0f));
-					MVP = model * proj * view;
-					shader.setUniformMat4f("u_MVP", MVP);
+					MVP_Scene = model * proj * view;
+					shader.setUniformMat4f("u_MVP", MVP_Scene);
 
 					if (board[c + (r * level.get_columns())] == 'X')
-					{
-						texture2.setVertAttribs(1, 2, 5, 3);
+					{		
 						texture2.bind();
-						shader.use();
-						drawBackground = false;
 					}
 					if (board[c + (r * level.get_columns())] == '0')
-					{
-						texture.setVertAttribs(1, 2, 5, 3);
+					{					
 						texture.bind();
-						shader.use();
-						drawBackground = false;
 					}
 					
 					renderer.draw(VAO, shader);
 				}
 			}
 		}
+
+		// <================ Player Frames Stuff =================> \\
 		
+		playerView = glm::translate(playerModel, glm::vec3(player.getX(), player.getY(), 0.0f));
+		MVP_Player = playerModel * proj * playerView;
+		
+		shader.setUniformMat4f("u_MVP", MVP_Player);
+		frames[currentFrame]->bind();
+		// Update the frame every time.
+		currentFrame += 0.115f;
+		if (currentFrame > 9.9)
+			currentFrame = 0.0f;
+		renderer.draw(VAOPlayer, shader);
+
+		if (!player.is_moving())
+			std::cout << "Player standing still!" << std::endl;
+		else {
+			if (player.is_moving_right())
+				std::cout << "Moving Right" << std::endl;
+			if (player.is_moving_left())
+				std::cout << "Moving Left" << std::endl;
+			if (player.is_jumping())
+				std::cout << "Player \"Jumping\"" << std::endl;
+			if (player.is_falling())
+				std::cout << "Player is \"Falling\"" << std::endl;
+		}
+		
+		
+		// <================ Player Frames Stuff =================> \\
+
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		// Switch buffers lol
@@ -117,6 +182,9 @@ void Game::run()
 
 		// ---------------- Changing Code -------------------- \\
 		
+		leftRightMove -= 1.0f;
+		if (leftRightMove <= -(level.get_columns() * 32) + 100)
+			leftRightMove = 0;
 
 		
 
@@ -136,17 +204,39 @@ void Game::processInput()
 	{
 		gameRunning = false;
 	}
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_A) == GLFW_PRESS)
+	{
+		player.moveX(-1.0f);
+	}
+	else if (glfwGetKey(window.getWindow(), GLFW_KEY_D) == GLFW_PRESS)
+	{
+		player.moveX(1.0f);
+	}
+	else player.moveX(0);
+
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_W) == GLFW_PRESS)
+	{
+		player.moveY(1.0f);
+	}
+	else if (glfwGetKey(window.getWindow(), GLFW_KEY_S) == GLFW_PRESS)
+	{
+		player.moveY(-1.0f);
+	}
+	else player.moveY(0);
 }  
 
 void Game::composeFrame()
 {
 	
-	glm::mat4 MVP = model * proj * view;
-
-
+	VAO.bufferVertexData(20, vertices);
 	texture.init();
 	texture.setVertAttribs(1, 2, 5, 3);
 	texture2.init();
+	texture2.setVertAttribs(1, 2, 5, 3);
+
+	VAOPlayer.bufferVertexData(20, vertices2);
+
+	
 
 	std::string vertSource;
 	std::string fragSource;
@@ -160,17 +250,13 @@ void Game::composeFrame()
 	
 	// Finally, use our shader program
 	shader.use();
-
-
-	texture.bind();
 	
 	
-	MVP = model * proj * view;
+	MVP_Scene = model * proj * view;
 	// <-------------------- Uniform Stuff ------------------------> \\
 	
-
-	shader.setUniform1i("u_Texture", 0);
-	shader.setUniformMat4f("u_MVP", MVP);
+	//shader.setUniform1i("u_Texture", 0);
+	shader.setUniformMat4f("u_MVP", MVP_Scene);
 } 
 
 template <typename T>

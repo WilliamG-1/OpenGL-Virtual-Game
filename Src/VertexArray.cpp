@@ -27,8 +27,6 @@ void VertexArray::init(struct Arrays A, int VBO_Array_Size, int EBO_Array_Size)
 
 	VBO_Container[0].init(A.vertices, VBO_Array_Size);
 	EBO_Container[0].init(A.indices, EBO_Array_Size);
-
-
 	
 	VertexArray::VBO_Count++;
 	VertexArray::EBO_Count++;
@@ -73,6 +71,12 @@ void VertexArray::setVertexAttribPointersf(int layoutLocation, int sizeData, int
 {
 	glVertexAttribPointer(layoutLocation, sizeData, GL_FLOAT, GL_FALSE, stride * sizeof(float), (void*)offset);
 	glEnableVertexAttribArray(layoutLocation);
+}
+
+void VertexArray::bufferVertexData(int arraySize, float* data)
+{
+	bind();
+	VBO_Container[0].bufferData(arraySize, data);
 }
 
 void VertexArray::bind()

@@ -20,6 +20,7 @@ public:
 	void bind();
 	void bindBuffers(struct Arrays A, int VBO_Array_Size, int EBO_Array_Size);
 	void setVertexAttribPointersf(int layoutLocation, int sizeData, int stride, int offset);
+	void bufferVertexData(int arraySize, float* data);
 
 	int getElementCount(int EBOIndex) const;
 private:

@@ -12,5 +12,5 @@ int Level::get_rows()
 
 int Level::get_columns()
 {
-	return 16;
+	return (board.size() / get_rows());
 }

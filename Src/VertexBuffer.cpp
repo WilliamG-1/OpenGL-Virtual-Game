@@ -14,6 +14,11 @@ void VertexBuffer::init(float vertexData[], int count)
 	glBufferData(GL_ARRAY_BUFFER, count * sizeof(float), vertexData, GL_STATIC_DRAW);
 }
 
+void VertexBuffer::bufferData(int arraySize, float data[])
+{
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, arraySize * sizeof(float), data, GL_STATIC_DRAW);
+}
 unsigned int VertexBuffer::getVertexID() const
 {
 	return vertexBufferObject;
