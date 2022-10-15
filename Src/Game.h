@@ -31,8 +31,8 @@ private:
 	Window window;
 	Arrays wrapper;
 
+	glm::vec2 playerStartingCoords = { 125.0f, 500.0f };
 	Player player;
-	glm::vec2 playerStartingCoords = { 200.0f, 500.0f };
 	VertexArray VAO;
 	VertexArray VAOPlayer;
 	Level level;

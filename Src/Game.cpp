@@ -4,7 +4,7 @@
 #define WINDOW_HEIGHT = 768.0F
 Game::Game()
 	:
-	wrapper(), player(125.0f, 500.0f, 64.0f, 64.0f),
+	wrapper(), player(playerStartingCoords.x, playerStartingCoords.y, 64.0f, 64.0f),
 	VAO(), // VAOPlayer(),
 	window(1024, 768, "OpenGl Game"),
 	texture("Assets/Background/Green.png"),
@@ -152,7 +152,7 @@ void Game::run()
 
 		MVP_Player = playerModel * proj * playerView;
 
-		playerView = glm::translate(playerModel, glm::vec3(player.getX()-125.0f, player.getY() - 500.0f, 0.0f));
+		playerView = glm::translate(playerModel, glm::vec3(player.getX()-playerStartingCoords.x, player.getY() - playerStartingCoords.y, 0.0f));
 		player.moveY(dt);
 
 		MVP_Player = playerModel * proj * playerView;
@@ -189,7 +189,7 @@ void Game::run()
 			if (Physics::is_collision_player_tile(player, *ptr) && player.is_moving_right())
 			{
 				int pos = player.getX();
-				player.setX(player.getX() - (pos % 64));
+				player.setX(player.getX() - (pos % 64 + 0.9f));
 			}
 			if (Physics::is_collision_player_tile(player, *ptr) && player.is_moving_left())
 			{
