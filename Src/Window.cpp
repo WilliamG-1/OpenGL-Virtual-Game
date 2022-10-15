@@ -20,7 +20,7 @@ Window::Window(int width, int height, const char* title)
 		glfwTerminate();
 	}	
 	glfwMakeContextCurrent(window);
-	resizeWindow();
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -42,10 +42,6 @@ void Window::init()
 	glViewport(0, 0, screenWidth, screenHeight);
 }
 
-void Window::resizeWindow()
-{
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-}
 
 GLFWwindow* Window::getWindow() const
 {

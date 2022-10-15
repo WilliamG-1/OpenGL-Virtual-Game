@@ -6,49 +6,33 @@ Entity::Entity(float in_x, float in_y, float in_width, float in_height)
 	y = in_y;
 	width = in_width;
 	height = in_height;
-	speed = 1.0f;
 }
 
-void Entity::moveX(float dx)
+void Entity::moveX(int direction, float dt)
 {
-	if (dx > 0)
+	if (direction == 1)
 	{
 		movement[static_cast<int>(MoveState::MOVING_RIGHT)] = true;
 		movement[static_cast<int>(MoveState::MOVING_LEFT)] = false;
 	}
-	if (dx < 0)
+	if (direction == -1)
 	{
 		movement[static_cast<int>(MoveState::MOVING_RIGHT)] = 0; // Not Moving Right
 		movement[static_cast<int>(MoveState::MOVING_LEFT)] = 1;  // Moving Left
 	}
 
-	if (dx == 0)
-	{
-		movement[static_cast<int>(MoveState::MOVING_RIGHT)] = 0; // Not Moving Right
-		movement[static_cast<int>(MoveState::MOVING_LEFT)] = 0;  // Moving Left
-	}
-	x += dx * speed;
+	this->x += (direction * xVel) * dt;
 }
 
-void Entity::moveY(float dy)
+void Entity::moveY(float dt)
 {
-	if (dy > 0)
+	this->y += (this->yVel)*dt;
+	if (this->yVel < 0)
 	{
-		movement[static_cast<int>(MoveState::JUMPING)] = true;
-		movement[static_cast<int>(MoveState::FALLING)] = false;
-	}
-	if (dy < 0)
-	{
-		movement[static_cast<int>(MoveState::JUMPING)] = false;
 		movement[static_cast<int>(MoveState::FALLING)] = true;
 	}
-
-	if (dy == 0)
-	{
-		movement[static_cast<int>(MoveState::JUMPING)] = false;
+	else
 		movement[static_cast<int>(MoveState::FALLING)] = false;
-	}
-	y += dy;
 }
 
 bool Entity::is_moving_left() const
@@ -81,6 +65,26 @@ bool Entity::is_moving()
 	return false;
 }
 
+bool Entity::can_move_right() const
+{
+	return canMove[static_cast<int>(CanMove::RIGHT)];
+}
+
+bool Entity::can_move_left() const
+{
+	return canMove[static_cast<int>(CanMove::LEFT)];
+}
+
+bool Entity::can_move_up() const
+{
+	return canMove[static_cast<int>(CanMove::UP)];
+}
+
+bool Entity::can_move_down() const
+{
+	return canMove[static_cast<int>(CanMove::DOWN)];
+}
+
 float Entity::getX() const
 {
 	return x;
@@ -99,4 +103,45 @@ float Entity::getWidth() const
 float Entity::getHeight() const
 {
 	return height;
+}
+
+void Entity::setX(float x)
+{
+	this->x = x;
+}
+
+void Entity::setY(float y)
+{
+	this->y = y;
+}
+
+
+void Entity::set_moving_right_state(bool state)
+{
+	movement[static_cast<int>(MoveState::MOVING_RIGHT)] = state;
+}
+
+void Entity::set_moving_left_state(bool state)
+{
+	movement[static_cast<int>(MoveState::MOVING_LEFT)] = state;  // Moving Left
+}
+
+void Entity::set_can_move_left(bool state)
+{
+	canMove[static_cast<int>(CanMove::LEFT)] = state;
+}
+
+void Entity::set_can_move_right(bool state)
+{
+	canMove[static_cast<int>(CanMove::RIGHT)] = state;
+}
+
+void Entity::set_can_jump(bool state)
+{
+	canMove[static_cast<int>(CanMove::UP)] = state;
+}
+
+void Entity::set_can_move_down(bool state)
+{
+	canMove[static_cast<int>(CanMove::DOWN)] = state;
 }

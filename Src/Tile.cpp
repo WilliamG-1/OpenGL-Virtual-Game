@@ -40,3 +40,13 @@ bool Tile::is_in_frame() const
 {
 	return ((x > 0) && (x + width < 1024) && (y > 0) && (y + height < 768));
 }
+
+void Tile::setX(float dx)
+{
+	this->x += dx;
+}
+
+void Tile::setY(float dy)
+{
+	this->y += dy;
+}

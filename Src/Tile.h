@@ -9,6 +9,9 @@ public:
 	float getWidth() const;
 	float getHeight() const;
 	bool is_in_frame() const;
+
+	void setX(float dx);
+	void setY(float dy);
 private:
 	float x;
 	float y;

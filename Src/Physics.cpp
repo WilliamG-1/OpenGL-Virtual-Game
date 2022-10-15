@@ -1,14 +1,13 @@
 #include "Physics.h"
-float Physics::gravity = 1.5;
-;
+
 bool Physics::entity_clamped_to_tile(Entity& e, Level& l)
 {
-	return false;
+	return 0;
 }
 
 bool Physics::is_collision_player_tile(Entity& e, Tile& t)
 {
-	return true;
+	return ((e.getX() + e.getWidth() > t.getX() && e.getX() < t.getX() + t.getWidth()) && ((e.getY() + e.getHeight() > t.getY()) && (e.getY() < t.getY() + t.getHeight())));
 }
 
 bool Physics::entity_right_collide_left_tile(Entity& e, Tile& t)

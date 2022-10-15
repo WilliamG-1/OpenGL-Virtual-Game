@@ -9,12 +9,19 @@ enum class MoveState
 	FALLING = 4
 };
 
+enum class CanMove
+{
+	RIGHT = 0,
+	LEFT = 1,
+	UP = 2,
+	DOWN = 3
+};
 class Entity
 {
 public:
 	Entity(float in_x, float in_y, float in_width, float in_height);
-	void moveX(float dx);
-	void moveY(float dy);
+	void moveX(int direction, float dt);
+	void moveY(float dt);
 
 	bool is_moving_left() const;
 	bool is_moving_right() const;
@@ -22,17 +29,36 @@ public:
 	bool is_falling() const;
 	bool is_moving();
 
+	bool can_move_right() const;
+	bool can_move_left() const;
+	bool can_move_up() const;
+	bool can_move_down() const;
+
 	float getX() const;
 	float getY() const;
 	float getWidth() const;
 	float getHeight() const;
-private:
+
+	void setX(float x);
+	void setY(float y);
+
+	void set_moving_right_state(bool state);
+	void set_moving_left_state(bool state);
+
+	void set_can_move_left(bool state);
+	void set_can_move_right(bool state);
+	void set_can_move_down(bool state);
+	void set_can_jump(bool state);
+	
+protected:
 	MoveState move_state;
 	std::vector<bool> movement = { 0, 0, 0, 0, 0 };
+	std::vector<bool> canMove = { 1, 1, 1, 1 };
 	float x;
 	float y;
 	float width;
 	float height;
-	float speed;
+	float yVel = 0.0f;
+	float xVel = 0.0f;
 
 };

@@ -10,6 +10,7 @@
 #include "Player.h"
 #include "zArrayConverter.h"
 #include "Tile.h"
+
 #include "Physics.h"
 
 enum class ArrayType {
@@ -26,13 +27,12 @@ public:
 
 	
 private:
-	template <typename T>
-	void copyArrToStruct(struct Arrays& A, T data[], unsigned int size, ArrayType type);
 		
 	Window window;
 	Arrays wrapper;
 
 	Player player;
+	glm::vec2 playerStartingCoords = { 200.0f, 500.0f };
 	VertexArray VAO;
 	VertexArray VAOPlayer;
 	Level level;
@@ -43,6 +43,10 @@ private:
 	//std::vector<Texture> idleAnimation;
 	std::vector<std::unique_ptr<Texture>> frames;
 	std::vector<std::unique_ptr<Tile>> grassTiles;
+
+	float dt;
+	float currentTime = 0.0f;
+	float lastTime;
 
 	float currentFrame = 0;
 
@@ -73,10 +77,9 @@ private:
 	void composeFrame();
 	bool gameRunning = true;
 	bool drawTriangle = true;
-	float leftRightMove = 0.0f;
-	float scaleRate = 1.0f;
-	float move = 0;
 
+	bool canMove = true;
+	float leftRightMove = 0.0f;
 	glm::mat4 MVP_Scene;
 	glm::mat4 proj;
 	glm::mat4 model;
@@ -87,5 +90,7 @@ private:
 	glm::mat4 playerView;
 
 	std::vector<char> board;
+
+	void updateDT();
 };
 

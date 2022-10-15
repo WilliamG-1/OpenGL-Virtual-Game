@@ -15,7 +15,6 @@ public:
 
 private:
 	GLFWwindow* window;
-	void resizeWindow();
 
 	// Variables
 	int screenWidth;
