@@ -126,6 +126,11 @@ void Entity::set_moving_left_state(bool state)
 	movement[static_cast<int>(MoveState::MOVING_LEFT)] = state;  // Moving Left
 }
 
+void Entity::set_moving_up_state(bool state)
+{
+	movement[static_cast<int>(MoveState::JUMPING)] = state;
+}
+
 void Entity::set_can_move_left(bool state)
 {
 	canMove[static_cast<int>(CanMove::LEFT)] = state;

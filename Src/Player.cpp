@@ -3,7 +3,7 @@
 Player::Player(float in_x, float in_y, float in_width, float in_height)
 	:
 	Entity(in_x, in_y, in_width, in_height),
-	velocity(50.0f, 0.0f)
+	velocity(30.0f, 0.0f)
 {
 	this->xVel = velocity.x;
 	this->yVel = velocity.y;
@@ -29,7 +29,7 @@ void Player::setVx(float in_x)
 	velocity.x = in_x;
 }
 
-void Player::setVY(float in_y)
+void Player::setVy(float in_y)
 {
 	velocity.y = in_y;
 }
@@ -44,5 +44,5 @@ void Player::applyGravity(float dt)
 
 void Player::jump(float dt)
 {
-	this->velocity.y = 200.0f;
+	this->velocity.y = 180.0f;
 }

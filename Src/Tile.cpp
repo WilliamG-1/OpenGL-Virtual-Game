@@ -18,22 +18,22 @@ Tile::Tile(float in_x, float in_y, float in_width, float in_height)
 
 float Tile::getX() const
 {
-	return x;
+	return this->x;
 }
 
 float Tile::getY() const
 {
-	return y;
+	return this->y;
 }
 
 float Tile::getWidth() const
 {
-	return width;
+	return this->width;
 }
 
 float Tile::getHeight() const
 {
-	return height;
+	return this->height;
 }
 
 bool Tile::is_in_frame() const
@@ -43,10 +43,10 @@ bool Tile::is_in_frame() const
 
 void Tile::setX(float dx)
 {
-	this->x += dx;
+	this->x = dx;
 }
 
 void Tile::setY(float dy)
 {
-	this->y += dy;
+	this->y = dy;
 }

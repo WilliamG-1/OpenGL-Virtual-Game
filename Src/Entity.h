@@ -44,6 +44,8 @@ public:
 
 	void set_moving_right_state(bool state);
 	void set_moving_left_state(bool state);
+	void set_moving_up_state(bool state);
+
 
 	void set_can_move_left(bool state);
 	void set_can_move_right(bool state);

@@ -64,10 +64,7 @@ Game::Game()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	proj = glm::ortho(0.0f, 1024.0f, 0.0f, 768.0f, -1.0f, 1.0f);
-
 	view = glm::translate(model, glm::vec3(leftRightMove, 0.0f, 0.0f));
-
-	//playerView = glm::translate(model, glm::vec3(player.getX(), player.getY(), 0.0f));
 	
 	MVP_Scene = model * proj * view;
 	MVP_Player = playerModel * proj * playerView;
@@ -110,17 +107,17 @@ void Game::run()
 		ImGui::Begin("Window");
 		ImGui::Text("Selection Screen OmegaLol");
 		ImGui::Checkbox("Draw Triangle", &drawTriangle);
-		ImGui::SliderFloat("Move Left & Right", &leftRightMove, 960.0f, -960.0f);
+		ImGui::SliderFloat("Move Left & Right", &leftRightMove, -960.0f, 960.0f);
 
 
 		ImGui::End();	
 		// <---------------- Rendering Code --------------------> \\
 		
-		view = glm::translate(model, glm::vec3(leftRightMove, 0.0f, 0.0f));
-		for (auto& p : grassTiles)
-		{
-			p->setX(0.0f);
-		}
+		//view = glm::translate(model, glm::vec3(leftRightMove, 0.0f, 0.0f));
+		//for (auto& p : grassTiles)
+		//{
+		//	p->setX((leftRightMove));
+		//}
 		shader.setUniformMat4f("u_MVP", MVP_Scene);
 		
 		if (drawTriangle)
@@ -163,16 +160,16 @@ void Game::run()
 		currentFrame += 0.115f;
 		if (currentFrame > 9.9)
 			currentFrame = 0.0f;
-		renderer.draw(VAOPlayer, shader);
 
+		renderer.draw(VAOPlayer, shader);
 		// <================ Player Frames Stuff =================> \\
 		
 
 		if (currentFrame == .115f)
 		{
 			//std::cout << " NO collision" << std::endl;
-			std::cout << "Player X: " << player.getX() << ", Player Y: " << player.getY() << std::endl;
-			std::cout << "Tile x: " << grassTiles[0]->getX() << ", Tile y:" << grassTiles[0]->getX() << std::endl;
+			//std::cout << "Player X: " << player.getX() << ", Player Y: " << player.getY() << std::endl;
+			std::cout << "Tile x: " << grassTiles[0]->getX() << ", Tile y:" << grassTiles[0]->getY() << std::endl;
 		}
 		
 		
@@ -181,21 +178,29 @@ void Game::run()
 			if (Physics::is_collision_player_tile(player, *ptr) && player.is_falling())
 			{
 				player.set_can_jump(true);
+				player.set_moving_up_state(false);
 				player.set_can_move_down(false);
 				int pos = player.getY() + 64.0f;
 				pos = pos - pos % 64;
 				player.setY(pos);
 			}
+			//else if (Physics::is_collision_player_tile(player, *ptr) && player.getVy() > 0)
+			//{
+			//	int pos = player.getY();
+			//	player.setY(player.getY() - (pos % 64));
+			//}
+
 			if (Physics::is_collision_player_tile(player, *ptr) && player.is_moving_right())
 			{
-				int pos = player.getX();
-				player.setX(player.getX() - (pos % 64 + 0.9f));
+				//int pos = player.getX();
+				//player.setX(player.getX() - (pos % 64 + player.getVx() * dt));
+				player.setX(ptr->getX() - 64.0f);
 			}
-			if (Physics::is_collision_player_tile(player, *ptr) && player.is_moving_left())
+			else if (Physics::is_collision_player_tile(player, *ptr) && player.is_moving_left())
 			{
-				int pos = player.getX() + 64.0f;
-				pos = pos - pos % 64;
-				player.setX(pos);
+				//int pos = player.getX() + 64.0f;
+				//pos = pos - pos % 64 + 5.0f;
+				player.setX(ptr->getX() + 64.0f + player.getVy() * dt);
 			}
 			
 
@@ -237,14 +242,14 @@ void Game::processInput()
 	// Left Movement
 	if (glfwGetKey(window.getWindow(), GLFW_KEY_A) == GLFW_PRESS && player.can_move_left())
 	{
-		player.setVx(50);
+		player.setVx(30);
 		player.moveX(-1, dt);
 		player.set_moving_left_state(true);
 	}
 	// Right Movement
 	else if (glfwGetKey(window.getWindow(), GLFW_KEY_D) == GLFW_PRESS && player.can_move_right())
 	{
-		player.setVx(50);
+		player.setVx(30);
 		player.moveX(1, dt);
 		player.set_moving_right_state(true);
 	}
@@ -256,6 +261,8 @@ void Game::processInput()
 	{
 		player.jump(dt);
 		player.set_can_jump(false);
+		player.set_moving_up_state(true);
+		player.set_can_move_down(true);
 	}
 
 	if (glfwGetKey(window.getWindow(), GLFW_KEY_A) == GLFW_RELEASE)
