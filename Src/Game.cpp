@@ -1,12 +1,13 @@
 #include "Game.h"
 #include <iostream>
+#include <iomanip>
 #define WIDNOW_WIDTH = 1024.0F
 #define WINDOW_HEIGHT = 768.0F
 Game::Game()
 	:
 	wrapper(), player(playerStartingCoords.x, playerStartingCoords.y, 64.0f, 64.0f),
 	VAO(), // VAOPlayer(),
-	window(1024, 768, "OpenGl Game"),
+	window(screenWidth, screenHeight, "OpenGl Game"),
 	texture("Assets/Background/Green.png"),
 	texture2("Assets/Tiles/GrassTile.png"),
 	playerTex("Assets/Virtual Guy/Idle/Idle00.png"),
@@ -26,7 +27,7 @@ Game::Game()
 	//VAO.init(wrapper, siz eof(vertices) / sizeof(float), sizeof(indices) / sizeof(unsigned int));
 	float a[20];
 	//tileVert = zArrayConverter::convert_coordinates_to_vert_tex_array(a, backgroundTile.getX(), backgroundTile.getY(), backgroundTile.getWidth(), backgroundTile.getHeight(), 0.0f, 0.0f, 1.0f, 1.0f);
-	tileVert = zArrayConverter::convert_coordinates_to_vert_tex_array(a, 0.0f, 704.0f, 64.0f, 64.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	tileVert = zArrayConverter::convert_coordinates_to_vert_tex_array(a, 0.0f, screenHeight - 64.0f, 64.0f, 64.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 	VAO.init(tileVert, 20, indices, sizeof(indices) / sizeof(unsigned int));
 	// VAO Layout location
 	// 3 coordinates, so size of 3 per attributes
@@ -63,7 +64,7 @@ Game::Game()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	proj = glm::ortho(0.0f, 1024.0f, 0.0f, 768.0f, -1.0f, 1.0f);
+	proj = glm::ortho(0.0f, screenWidth, 0.0f, screenHeight, -1.0f, 1.0f);
 	view = glm::translate(model, glm::vec3(leftRightMove, 0.0f, 0.0f));
 	
 	MVP_Scene = model * proj * view;
@@ -107,7 +108,7 @@ void Game::run()
 			{
 				for (int c = 0; c < level.get_columns(); c++)
 				{
-					view = glm::translate(model, glm::vec3(leftRightMove + (64 * c), -(64 * r), 0.0f));
+					view = glm::translate(model, glm::vec3(level.get_tile_displacement_x() + (64 * c), -(64 * r), 0.0f));
 					MVP_Scene = model * proj * view;
 					shader.setUniformMat4f("u_MVP", MVP_Scene);
 
@@ -125,12 +126,12 @@ void Game::run()
 				}
 			}
 		}
-
+		
 		// <================ Player Frames Stuff =================> \\
 
-		MVP_Player = playerModel * proj * playerView;
-
-		playerView = glm::translate(playerModel, glm::vec3(player.getX()-playerStartingCoords.x, player.getY() - playerStartingCoords.y, 0.0f));
+		
+		processInput();
+		playerView = glm::translate(playerModel, glm::vec3(player.getX() - playerStartingCoords.x, player.getY() - playerStartingCoords.y, 0.0f));
 		player.moveY(dt);
 		player.moveX(dt);
 		MVP_Player = playerModel * proj * playerView;
@@ -161,8 +162,16 @@ void Game::run()
 		// ---------------- Changing Code -------------------- \\
 		
 		update_dt();
-		processInput();
+		std::cout << std::fixed;
+		std::cout << std::setprecision(2);
+		std::cout << "Center: " << xScreenCenter << " Player (" << player.getX() << ", " << player.getY() << ") Tile 1: (" << level.get_grass_blocks()[0].getX() << ", " << level.get_grass_blocks()[0].getY() << ") Displacement: " << displacement << " TDisplacemeent: " << tileDisplacement << std::endl;
+		currentX = player.getX();
+		displacement = currentX - lastX;
+		lastX = currentX;
 
+		currentTileX = level.get_grass_blocks()[0].getX();
+		tileDisplacement = level.get_grass_blocks()[0].getX() - lstTileX;
+		lstTileX = currentTileX;
 	}
 
 
@@ -184,14 +193,33 @@ void Game::processInput()
 	// Left Movement
 	if (glfwGetKey(window.getWindow(), GLFW_KEY_A) == GLFW_PRESS && player.can_move_left())
 	{
-		player.setVx(-30);
-		player.set_moving_left_state(true);
+		
+		if (player.getX() < (xScreenCenter - (xScreenCenter * 0.5)))
+		{
+			player.setVx(0);
+			level.scroll(30.0f, dt);
+		}
+		else {			
+			player.setVx(-30);
+			//playerView = glm::translate(playerModel, glm::vec3(player.getX() - playerStartingCoords.x, player.getY() - playerStartingCoords.y, 0.0f));
+			player.set_moving_left_state(true);
+		}
 	}
+
 	// Right Movement
 	else if (glfwGetKey(window.getWindow(), GLFW_KEY_D) == GLFW_PRESS && player.can_move_right())
 	{
-		player.setVx(30);
-		player.set_moving_right_state(true);
+		
+		if (player.getX() > (xScreenCenter + (xScreenCenter * 0.5)))
+		{
+			player.setVx(0);
+			level.scroll(-30.0f, dt);
+		}
+		else {
+			player.setVx(30);
+			//playerView = glm::translate(playerModel, glm::vec3(player.getX() - playerStartingCoords.x, player.getY() - playerStartingCoords.y, 0.0f));
+			player.set_moving_right_state(true);
+		}
 	}
 	else
 	{
@@ -220,9 +248,6 @@ void Game::processInput()
 		player.set_moving_right_state(false);
 		player.set_can_move_right(true);	
 	}
-	
-
-
 	
 }  
 

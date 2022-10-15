@@ -27,6 +27,8 @@ public:
 
 	
 private:	
+	float screenWidth = 1024.0f;
+	float screenHeight = 768.0f;
 	Window window;
 	Arrays wrapper;
 
@@ -70,6 +72,7 @@ private:
 		64.0f, 64.0f, 0.0f,		0.875f, 0.825f,	 // Top Right    (2)
 		00.0f, 64.0f, 0.0f,		0.125f, 0.825f	 // Top Left     (3)
 	};
+
 	float* tileVert;
 	float* playerVert;
 	void composeFrame();
@@ -78,6 +81,7 @@ private:
 
 	bool canMove = true;
 	float leftRightMove = 0.0f;
+	float xScreenCenter = screenWidth / 2;
 	glm::mat4 MVP_Scene;
 	glm::mat4 proj;
 	glm::mat4 model;
@@ -91,5 +95,13 @@ private:
 
 	void do_collisions();
 	void update_dt();
+
+	// Temporary stuff lol for testing
+	float currentX = 0.0f;
+	float lastX = 0.0f;
+	float displacement = currentX - lastX;
+	float currentTileX = 0.0f;
+	float tileDisplacement = 0.0f;
+	float lstTileX = 0.0f;
 };
 

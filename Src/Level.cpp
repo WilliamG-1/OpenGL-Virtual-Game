@@ -16,9 +16,10 @@ void Level::init_grass_tiles(float screenHeight)
 
 void Level::scroll(float playerVelocity, float dt)
 {
+	dx += playerVelocity * dt;
 	for (Tile& block : grassBlocks)
 	{
-		block.setX(block.get_starting_x() * playerVelocity * dt);
+		block.setX(block.get_starting_x() + dx);
 	}
 }
 
@@ -40,5 +41,10 @@ int Level::get_rows()
 int Level::get_columns()
 {
 	return (board.size() / get_rows());
+}
+
+float Level::get_tile_displacement_x() const
+{
+	return this->dx;
 }
 
