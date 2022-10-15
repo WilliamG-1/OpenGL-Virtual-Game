@@ -69,21 +69,7 @@ Game::Game()
 	MVP_Scene = model * proj * view;
 	MVP_Player = playerModel * proj * playerView;
 	board = level.get_board();
-
-	for (int r = 0; r < level.get_rows(); r++)
-	{
-		for (int c = 0; c < level.get_columns(); c++)
-		{
-			if (board[c + (r * level.get_columns())] == 'X')
-			{
-				grassTiles.push_back(std::move(std::make_unique<Tile>(c * 64, 704.0f -(r * 64), 64.0f, 64.0f)));
-			}
-
-		}
-	}
-
-	for (auto& u_ptr : grassTiles)
-		std::cout << "Tile x :" << u_ptr->getX() << ", Tile y: " << u_ptr->getY() << std::endl;
+	
 }
 
 void Game::run()
@@ -112,12 +98,7 @@ void Game::run()
 
 		ImGui::End();	
 		// <---------------- Rendering Code --------------------> \\
-		
-		//view = glm::translate(model, glm::vec3(leftRightMove, 0.0f, 0.0f));
-		//for (auto& p : grassTiles)
-		//{
-		//	p->setX((leftRightMove));
-		//}
+
 		shader.setUniformMat4f("u_MVP", MVP_Scene);
 		
 		if (drawTriangle)
@@ -151,7 +132,7 @@ void Game::run()
 
 		playerView = glm::translate(playerModel, glm::vec3(player.getX()-playerStartingCoords.x, player.getY() - playerStartingCoords.y, 0.0f));
 		player.moveY(dt);
-
+		player.moveX(dt);
 		MVP_Player = playerModel * proj * playerView;
 		
 		shader.setUniformMat4f("u_MVP", MVP_Player);
@@ -162,52 +143,13 @@ void Game::run()
 			currentFrame = 0.0f;
 
 		renderer.draw(VAOPlayer, shader);
+		do_collisions();
 		// <================ Player Frames Stuff =================> \\
 		
 
 		if (currentFrame == .115f)
 		{
-			//std::cout << " NO collision" << std::endl;
-			//std::cout << "Player X: " << player.getX() << ", Player Y: " << player.getY() << std::endl;
-			std::cout << "Tile x: " << grassTiles[0]->getX() << ", Tile y:" << grassTiles[0]->getY() << std::endl;
-		}
-		
-		
-		for (auto& ptr : grassTiles)
-		{
-			if (Physics::is_collision_player_tile(player, *ptr) && player.is_falling())
-			{
-				player.set_can_jump(true);
-				player.set_moving_up_state(false);
-				player.set_can_move_down(false);
-				int pos = player.getY() + 64.0f;
-				pos = pos - pos % 64;
-				player.setY(pos);
-			}
-			//else if (Physics::is_collision_player_tile(player, *ptr) && player.getVy() > 0)
-			//{
-			//	int pos = player.getY();
-			//	player.setY(player.getY() - (pos % 64));
-			//}
-
-			if (Physics::is_collision_player_tile(player, *ptr) && player.is_moving_right())
-			{
-				//int pos = player.getX();
-				//player.setX(player.getX() - (pos % 64 + player.getVx() * dt));
-				player.setX(ptr->getX() - 64.0f);
-			}
-			else if (Physics::is_collision_player_tile(player, *ptr) && player.is_moving_left())
-			{
-				//int pos = player.getX() + 64.0f;
-				//pos = pos - pos % 64 + 5.0f;
-				player.setX(ptr->getX() + 64.0f + player.getVy() * dt);
-			}
-			
-
-		}
-		player.applyGravity(dt);
-		//if (player.can_move_down())
-		
+		}		
 		
 		// <================ Player Frames Stuff =================> \\
 
@@ -218,7 +160,7 @@ void Game::run()
 		glfwPollEvents();
 		// ---------------- Changing Code -------------------- \\
 		
-		updateDT();
+		update_dt();
 		processInput();
 
 	}
@@ -242,19 +184,22 @@ void Game::processInput()
 	// Left Movement
 	if (glfwGetKey(window.getWindow(), GLFW_KEY_A) == GLFW_PRESS && player.can_move_left())
 	{
-		player.setVx(30);
-		player.moveX(-1, dt);
+		player.setVx(-30);
 		player.set_moving_left_state(true);
 	}
 	// Right Movement
 	else if (glfwGetKey(window.getWindow(), GLFW_KEY_D) == GLFW_PRESS && player.can_move_right())
 	{
 		player.setVx(30);
-		player.moveX(1, dt);
 		player.set_moving_right_state(true);
 	}
 	else
+	{
 		player.setVx(0);
+		player.set_moving_right_state(false);
+		player.set_moving_left_state(false);
+	}
+
 
 	// Jumping
 	if (glfwGetKey(window.getWindow(), GLFW_KEY_SPACE) == GLFW_PRESS && player.can_move_up())
@@ -308,9 +253,45 @@ void Game::composeFrame()
 	
 	//shader.setUniform1i("u_Texture", 0);
 	shader.setUniformMat4f("u_MVP", MVP_Scene);
+	level.init_grass_tiles(768.0f);
 } 
 
-void Game::updateDT()
+void Game::do_collisions()
+{
+	for (auto& tile : level.get_grass_blocks())
+	{
+		if (Physics::is_collision_player_tile(player, tile) && player.is_falling())
+		{
+			player.set_can_jump(true);
+			player.set_moving_up_state(false);
+			player.set_can_move_down(false);
+			int pos = player.getY() + 64.0f;
+			pos = pos - pos % 64;
+			player.setY(pos);
+		}
+		//else if (Physics::is_collision_player_tile(player, *ptr) && player.getVy() > 0)
+		//{
+		//	int pos = player.getY();
+		//	player.setY(player.getY() - (pos % 64));
+		//}
+
+		if (Physics::is_collision_player_tile(player, tile) && player.is_moving_right())
+		{
+			//int pos = player.getX();
+			//player.setX(player.getX() - (pos % 64 + player.getVx() * dt));
+			player.setX(player.getX() - (player.getX() + player.getWidth() - tile.getX()));
+		}
+		else if (Physics::is_collision_player_tile(player, tile) && player.is_moving_left())
+		{
+			//int pos = player.getX() + 64.0f;
+			//pos = pos - pos % 64 + 5.0f;
+			player.setX(player.getX() + (tile.getX() + tile.getWidth() - player.getX()));
+		}
+	}
+
+	player.applyGravity(dt);
+}
+void Game::update_dt()
 {
 	this->currentTime = static_cast<float>(glfwGetTime());
 	this->dt = (this->currentTime - this->lastTime) * 10;
@@ -319,27 +300,6 @@ void Game::updateDT()
 	this->lastTime = currentTime;
 	
 }
-
-//template <typename T>
-//void Game::copyArrToStruct(struct Arrays& A, T data[], unsigned int size, ArrayType type)
-//{
-//	ArrayType t = type;
-//	if (type == ArrayType::VERTEX)
-//	{
-//		for (unsigned int i = 0; i < size; i++)
-//		{
-//			A.vertices[i] = data[i];
-//		}
-//	}
-//	else if (type == ArrayType::ELEMENT)
-//	{
-//		for (unsigned int i = 0; i < size; i++)
-//		{
-//			A.indices[i] = data[i];
-//		}
-//	}
-//}
-
 Game::~Game()
 {
 	std::cout << "Destroy" << std::endl;

@@ -8,20 +8,20 @@ Entity::Entity(float in_x, float in_y, float in_width, float in_height)
 	height = in_height;
 }
 
-void Entity::moveX(int direction, float dt)
+void Entity::moveX(float dt)
 {
-	if (direction == 1)
+	if (xVel > 0)
 	{
 		movement[static_cast<int>(MoveState::MOVING_RIGHT)] = true;
 		movement[static_cast<int>(MoveState::MOVING_LEFT)] = false;
 	}
-	if (direction == -1)
+	else if(xVel < 0)
 	{
 		movement[static_cast<int>(MoveState::MOVING_RIGHT)] = 0; // Not Moving Right
 		movement[static_cast<int>(MoveState::MOVING_LEFT)] = 1;  // Moving Left
 	}
 
-	this->x += (direction * xVel) * dt;
+	this->x += xVel * dt;
 }
 
 void Entity::moveY(float dt)

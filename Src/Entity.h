@@ -20,7 +20,7 @@ class Entity
 {
 public:
 	Entity(float in_x, float in_y, float in_width, float in_height);
-	void moveX(int direction, float dt);
+	void moveX(float dt);
 	void moveY(float dt);
 
 	bool is_moving_left() const;

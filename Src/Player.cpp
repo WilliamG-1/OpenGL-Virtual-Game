@@ -27,6 +27,7 @@ float Player::getGravity() const
 void Player::setVx(float in_x)
 {
 	velocity.x = in_x;
+	xVel = velocity.x;
 }
 
 void Player::setVy(float in_y)
@@ -44,5 +45,5 @@ void Player::applyGravity(float dt)
 
 void Player::jump(float dt)
 {
-	this->velocity.y = 180.0f;
+	this->velocity.y = 200.0f;
 }

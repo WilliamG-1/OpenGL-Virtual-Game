@@ -26,8 +26,7 @@ public:
 	void processInput();
 
 	
-private:
-		
+private:	
 	Window window;
 	Arrays wrapper;
 
@@ -40,9 +39,8 @@ private:
 	Texture texture;
 	Texture texture2;
 	Texture playerTex;
-	//std::vector<Texture> idleAnimation;
+
 	std::vector<std::unique_ptr<Texture>> frames;
-	std::vector<std::unique_ptr<Tile>> grassTiles;
 
 	float dt;
 	float currentTime = 0.0f;
@@ -91,6 +89,7 @@ private:
 
 	std::vector<char> board;
 
-	void updateDT();
+	void do_collisions();
+	void update_dt();
 };
 
