@@ -194,13 +194,13 @@ void Game::processInput()
 	if (glfwGetKey(window.getWindow(), GLFW_KEY_A) == GLFW_PRESS && player.can_move_left())
 	{
 		
-		if (player.getX() < (xScreenCenter - (xScreenCenter * 0.5)))
+		if ((player.getX() + player.getX() + player.getWidth())/2 < (xScreenCenter - (xScreenCenter * 0.4)))
 		{
 			player.setVx(0);
-			level.scroll(30.0f, dt);
+			level.scroll(moveSpeed, dt);
 		}
 		else {			
-			player.setVx(-30);
+			player.setVx(-moveSpeed);
 			//playerView = glm::translate(playerModel, glm::vec3(player.getX() - playerStartingCoords.x, player.getY() - playerStartingCoords.y, 0.0f));
 			player.set_moving_left_state(true);
 		}
@@ -210,13 +210,13 @@ void Game::processInput()
 	else if (glfwGetKey(window.getWindow(), GLFW_KEY_D) == GLFW_PRESS && player.can_move_right())
 	{
 		
-		if (player.getX() > (xScreenCenter + (xScreenCenter * 0.5)))
+		if ((player.getX() + player.getX() + player.getWidth())/ 2 > (xScreenCenter + (xScreenCenter * 0.4)))
 		{
 			player.setVx(0);
-			level.scroll(-30.0f, dt);
+			level.scroll(-moveSpeed, dt);
 		}
 		else {
-			player.setVx(30);
+			player.setVx(moveSpeed);
 			//playerView = glm::translate(playerModel, glm::vec3(player.getX() - playerStartingCoords.x, player.getY() - playerStartingCoords.y, 0.0f));
 			player.set_moving_right_state(true);
 		}

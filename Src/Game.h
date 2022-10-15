@@ -29,6 +29,7 @@ public:
 private:	
 	float screenWidth = 1024.0f;
 	float screenHeight = 768.0f;
+	float moveSpeed = 40.0f;
 	Window window;
 	Arrays wrapper;
 
@@ -43,7 +44,6 @@ private:
 	Texture playerTex;
 
 	std::vector<std::unique_ptr<Texture>> frames;
-
 	float dt;
 	float currentTime = 0.0f;
 	float lastTime;
