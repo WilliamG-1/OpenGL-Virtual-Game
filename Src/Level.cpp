@@ -17,10 +17,15 @@ void Level::init_grass_tiles(float screenHeight)
 void Level::scroll(float playerVelocity, float dt)
 {
 	dx += playerVelocity * dt;
-	for (Tile& block : grassBlocks)
-	{
-		block.setX(block.get_starting_x() + dx);
-	}
+	//for (Tile& block : grassBlocks)
+	//{
+	//	block.setX(block.get_starting_x() + dx);
+	//}
+}
+
+void Level::scroll(glm::mat4& viewMatrix)
+{
+	
 }
 
 std::vector<Tile>& Level::get_grass_blocks()

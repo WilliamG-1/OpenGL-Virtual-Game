@@ -44,6 +44,7 @@ private:
 	Texture playerTex;
 
 	std::vector<std::unique_ptr<Texture>> frames;
+	std::vector<std::unique_ptr<Texture>> runningFrames;
 	float dt;
 	float currentTime = 0.0f;
 	float lastTime;
@@ -73,15 +74,20 @@ private:
 		00.0f, 64.0f, 0.0f,		0.125f, 0.825f	 // Top Left     (3)
 	};
 
+	float playerScreenX;
+	float playerScreenY;
+	float playerMiddle;
+
+	float leftBound = (screenWidth / 2) - (screenWidth /2 ) * 0.1; // Left threshold for screen to begin scrolling
+	float rightBound = (screenWidth / 2) + (screenWidth / 2) * 0.1;// Right threshold
 	float* tileVert;
 	float* playerVert;
 	void composeFrame();
 	bool gameRunning = true;
 	bool drawTriangle = true;
 
-	bool canMove = true;
 	float leftRightMove = 0.0f;
-	float xScreenCenter = screenWidth / 2;
+
 	glm::mat4 MVP_Scene;
 	glm::mat4 proj;
 	glm::mat4 model;

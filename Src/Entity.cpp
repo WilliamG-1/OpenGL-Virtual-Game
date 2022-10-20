@@ -57,7 +57,7 @@ bool Entity::is_falling() const
 
 bool Entity::is_moving()
 {
-	for (int i = 1; i < 5; i++)
+	for (int i = 1; i < 4; i++)
 	{
 		if (movement[i])
 			return true;

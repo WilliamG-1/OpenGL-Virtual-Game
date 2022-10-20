@@ -1,4 +1,5 @@
 #pragma once
+#include <glm/glm.hpp>
 #include <vector>
 #include "Tile.h"
 
@@ -7,7 +8,7 @@ class Level
 public:
 	void init_grass_tiles(float screenHeight);
 	void scroll(float player_velocity, float dt);
-
+	void scroll(glm::mat4& viewMatrix);
 	std::vector<char> get_board() const;
 	std::vector<Tile>& get_grass_blocks();
 
@@ -34,6 +35,6 @@ private:
 			'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'  // 12
 	};
 	
-	float dx = 0.0;
+	float dx = 0.0f;
 };
 

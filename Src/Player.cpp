@@ -46,4 +46,5 @@ void Player::applyGravity(float dt)
 void Player::jump(float dt)
 {
 	this->velocity.y = 200.0f;
+	this->yVel = 200.0f;
 }

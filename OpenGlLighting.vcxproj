@@ -181,6 +181,7 @@
     <ClInclude Include="Extern\Imgui\imstb_rectpack.h" />
     <ClInclude Include="Extern\Imgui\imstb_textedit.h" />
     <ClInclude Include="Extern\Imgui\imstb_truetype.h" />
+    <ClInclude Include="Src\Camera.h" />
     <ClInclude Include="Src\Entity.h" />
     <ClInclude Include="Src\Physics.h" />
     <ClInclude Include="Src\Player.h" />

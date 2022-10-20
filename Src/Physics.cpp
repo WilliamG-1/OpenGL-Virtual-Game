@@ -11,6 +11,12 @@ bool Physics::is_collision_player_tile(Entity& e, Tile& t)
 	return ((e.getX() + e.getWidth() > t.getX() && e.getX() < t.getX() + t.getWidth()) && ((e.getY() + e.getHeight() > t.getY()) && (e.getY() < t.getY() + t.getHeight())));
 }
 
+bool Physics::is_collision_player_tile_lr(Entity& e, Tile& t)
+{
+
+	return ((e.getX() + e.getWidth() - 0.5f > t.getX() && e.getX() + 0.5f < t.getX() + t.getWidth()) && ((e.getY() + e.getHeight() > t.getY()) && (e.getY() < t.getY() + t.getHeight())));
+}
+
 bool Physics::entity_right_collide_left_tile(Entity& e, Tile& t)
 {
 	return ((e.getX() + e.getWidth() > t.getX() && e.getX() < t.getX() + t.getWidth()) && ((e.getY() + e.getHeight() > t.getY()) && (e.getY() < t.getY() + t.getHeight())));

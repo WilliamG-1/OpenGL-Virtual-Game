@@ -37,12 +37,14 @@ Game::Game()
 
 	//  Player Stuff
 	float b[20];
-	playerVert = zArrayConverter::convert_coordinates_to_vert_tex_array(b, player.getX(), player.getY(), player.getWidth(), player.getHeight(), 0.125f, 0.0f, 0.75f, 0.825f);
+	playerVert = zArrayConverter::convert_coordinates_to_vert_tex_array(b, 0.0f, 0.0f, player.getWidth(), player.getHeight(), 0.125f, 0.0f, 0.75f, 0.825f);
+	playerScreenX = player.getX();
+	playerScreenY = player.getY();
 
+	playerView = glm::translate(glm::mat4(1.0f), glm::vec3(playerScreenX, playerScreenY, 0.0f));
 	VAOPlayer.init(playerVert, 20, indices2, sizeof(indices2) / sizeof(unsigned int));
 	VAOPlayer.setVertexAttribPointersf(0, 3, 5, 0);
 
-	//playerView = glm::translate(playerModel, glm::vec3(0-player.getX(), 0-player.getY(), 0.0f));
 	MVP_Player = playerModel * proj * playerView;
 
 	playerTex.init();
@@ -70,7 +72,7 @@ Game::Game()
 	MVP_Scene = model * proj * view;
 	MVP_Player = playerModel * proj * playerView;
 	board = level.get_board();
-	
+	playerMiddle = (playerScreenX + playerScreenX + player.getWidth()) / 2;
 }
 
 void Game::run()
@@ -92,16 +94,20 @@ void Game::run()
 		
 		// ========================= ImGui ==============================
 		ImGui::Begin("Window");
-		ImGui::Text("Selection Screen OmegaLol");
-		ImGui::Checkbox("Draw Triangle", &drawTriangle);
-		ImGui::SliderFloat("Move Left & Right", &leftRightMove, -960.0f, 960.0f);
-
-
+		ImGui::Text("Player Coordinates: (%.2f., %.2f)", player.getX(), player.getY());
+		ImGui::Text("Player Velocity: (%.2f, %.2f)", player.getVx(), player.getVy());
+		ImGui::Text("Tile: (%.2f, %.2f)", level.get_grass_blocks()[0].getX(), level.get_grass_blocks()[0].getY());
+		ImGui::Text("Tile Displacement: %.2f", level.get_tile_displacement_x());
+		ImGui::Text("Player is moving: %d$", player.is_moving());
+		ImGui::Text("Player Screen Coords: (%.2f, %.2f)", playerScreenX, playerScreenY);
+		ImGui::Text("Bounds: (%.2f, %.2f)", leftBound, rightBound);
+		ImGui::Text("pCenter = %.2f", playerMiddle);
 		ImGui::End();	
 		// <---------------- Rendering Code --------------------> \\
 
 		shader.setUniformMat4f("u_MVP", MVP_Scene);
-		
+		shader.setUniform1f("facing_right", 1.0f);
+		shader.setUniform1f("player_being_rendered", 0.0f);
 		if (drawTriangle)
 		{
 			for (int r = 0; r < level.get_rows(); r++)
@@ -129,9 +135,13 @@ void Game::run()
 		
 		// <================ Player Frames Stuff =================> \\
 
-		
+		shader.setUniform1f("player_being_rendered", 1.0f);
+		if (glfwGetKey(window.getWindow(), GLFW_KEY_B) == GLFW_PRESS)
+			shader.setUniform1f("facing_right", 0.0f);
+		if (glfwGetKey(window.getWindow(), GLFW_KEY_R) == GLFW_PRESS)
+			shader.setUniform1f("facing_right", 1.0f);
 		processInput();
-		playerView = glm::translate(playerModel, glm::vec3(player.getX() - playerStartingCoords.x, player.getY() - playerStartingCoords.y, 0.0f));
+		playerView = glm::translate(playerModel, glm::vec3(playerScreenX, player.getY(), 0.0f));
 		player.moveY(dt);
 		player.moveX(dt);
 		MVP_Player = playerModel * proj * playerView;
@@ -145,26 +155,23 @@ void Game::run()
 
 		renderer.draw(VAOPlayer, shader);
 		do_collisions();
+		playerMiddle = (playerScreenX + playerScreenX + player.getWidth()) / 2;
 		// <================ Player Frames Stuff =================> \\
 		
 
-		if (currentFrame == .115f)
-		{
-		}		
 		
-		// <================ Player Frames Stuff =================> \\
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		// Switch buffers lol
 		glfwSwapBuffers(window.getWindow());
 		glfwPollEvents();
-		// ---------------- Changing Code -------------------- \\
+		// ---------------- Testing Code -------------------- \\
 		
 		update_dt();
 		std::cout << std::fixed;
 		std::cout << std::setprecision(2);
-		std::cout << "Center: " << xScreenCenter << " Player (" << player.getX() << ", " << player.getY() << ") Tile 1: (" << level.get_grass_blocks()[0].getX() << ", " << level.get_grass_blocks()[0].getY() << ") Displacement: " << displacement << " TDisplacemeent: " << tileDisplacement << std::endl;
+		
 		currentX = player.getX();
 		displacement = currentX - lastX;
 		lastX = currentX;
@@ -172,8 +179,8 @@ void Game::run()
 		currentTileX = level.get_grass_blocks()[0].getX();
 		tileDisplacement = level.get_grass_blocks()[0].getX() - lstTileX;
 		lstTileX = currentTileX;
+		
 	}
-
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
@@ -194,14 +201,14 @@ void Game::processInput()
 	if (glfwGetKey(window.getWindow(), GLFW_KEY_A) == GLFW_PRESS && player.can_move_left())
 	{
 		
-		if ((player.getX() + player.getX() + player.getWidth())/2 < (xScreenCenter - (xScreenCenter * 0.4)))
+		if (playerMiddle < leftBound)
 		{
-			player.setVx(0);
+			player.setVx(-moveSpeed);	
 			level.scroll(moveSpeed, dt);
 		}
 		else {			
+			playerScreenX -= moveSpeed * dt;
 			player.setVx(-moveSpeed);
-			//playerView = glm::translate(playerModel, glm::vec3(player.getX() - playerStartingCoords.x, player.getY() - playerStartingCoords.y, 0.0f));
 			player.set_moving_left_state(true);
 		}
 	}
@@ -210,14 +217,14 @@ void Game::processInput()
 	else if (glfwGetKey(window.getWindow(), GLFW_KEY_D) == GLFW_PRESS && player.can_move_right())
 	{
 		
-		if ((player.getX() + player.getX() + player.getWidth())/ 2 > (xScreenCenter + (xScreenCenter * 0.4)))
+		if (playerMiddle > rightBound)
 		{
-			player.setVx(0);
+			player.setVx(moveSpeed);			
 			level.scroll(-moveSpeed, dt);
 		}
 		else {
+			playerScreenX += moveSpeed * dt;
 			player.setVx(moveSpeed);
-			//playerView = glm::translate(playerModel, glm::vec3(player.getX() - playerStartingCoords.x, player.getY() - playerStartingCoords.y, 0.0f));
 			player.set_moving_right_state(true);
 		}
 	}
@@ -249,6 +256,8 @@ void Game::processInput()
 		player.set_can_move_right(true);	
 	}
 	
+
+	
 }  
 
 void Game::composeFrame()
@@ -277,6 +286,7 @@ void Game::composeFrame()
 	// <-------------------- Uniform Stuff ------------------------> \\
 	
 	//shader.setUniform1i("u_Texture", 0);
+	shader.setUniform1f("facing_right", 1.0f);
 	shader.setUniformMat4f("u_MVP", MVP_Scene);
 	level.init_grass_tiles(768.0f);
 } 
@@ -285,33 +295,35 @@ void Game::do_collisions()
 {
 	for (auto& tile : level.get_grass_blocks())
 	{
+		
 		if (Physics::is_collision_player_tile(player, tile) && player.is_falling())
 		{
+			player.setVy(0);
 			player.set_can_jump(true);
 			player.set_moving_up_state(false);
 			player.set_can_move_down(false);
-			int pos = player.getY() + 64.0f;
-			pos = pos - pos % 64;
-			player.setY(pos);
+			//int pos = player.getY() + 64.0f;
+			//pos = pos - pos % 64;
+			player.setY(player.getY() + (tile.getY() + tile.getHeight() - player.getY()));
 		}
 		//else if (Physics::is_collision_player_tile(player, *ptr) && player.getVy() > 0)
 		//{
 		//	int pos = player.getY();
 		//	player.setY(player.getY() - (pos % 64));
 		//}
-
-		if (Physics::is_collision_player_tile(player, tile) && player.is_moving_right())
+		if (Physics::is_collision_player_tile_lr(player, tile) && player.is_moving_right())
 		{
 			//int pos = player.getX();
 			//player.setX(player.getX() - (pos % 64 + player.getVx() * dt));
 			player.setX(player.getX() - (player.getX() + player.getWidth() - tile.getX()));
 		}
-		else if (Physics::is_collision_player_tile(player, tile) && player.is_moving_left())
+		else if (Physics::is_collision_player_tile_lr(player, tile) && player.is_moving_left())
 		{
 			//int pos = player.getX() + 64.0f;
 			//pos = pos - pos % 64 + 5.0f;
 			player.setX(player.getX() + (tile.getX() + tile.getWidth() - player.getX()));
 		}
+		
 	}
 
 	player.applyGravity(dt);
