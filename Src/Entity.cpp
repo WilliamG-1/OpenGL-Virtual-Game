@@ -27,12 +27,7 @@ void Entity::moveX(float dt)
 void Entity::moveY(float dt)
 {
 	this->y += (this->yVel)*dt;
-	if (this->yVel < 0)
-	{
-		movement[static_cast<int>(MoveState::FALLING)] = true;
-	}
-	else
-		movement[static_cast<int>(MoveState::FALLING)] = false;
+	
 }
 
 bool Entity::is_moving_left() const
@@ -47,7 +42,7 @@ bool Entity::is_moving_right() const
 
 bool Entity::is_jumping() const
 {
-	return movement[static_cast<int>(MoveState::JUMPING)];
+	return yVel > 0;
 }
 
 bool Entity::is_falling() const
@@ -129,6 +124,11 @@ void Entity::set_moving_left_state(bool state)
 void Entity::set_moving_up_state(bool state)
 {
 	movement[static_cast<int>(MoveState::JUMPING)] = state;
+}
+
+void Entity::set_falling_state(bool state)
+{
+	movement[static_cast<int>(MoveState::FALLING)] = state;
 }
 
 void Entity::set_can_move_left(bool state)

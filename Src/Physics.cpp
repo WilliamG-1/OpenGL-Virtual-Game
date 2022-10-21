@@ -7,32 +7,8 @@ bool Physics::entity_clamped_to_tile(Entity& e, Level& l)
 
 bool Physics::is_collision_player_tile(Entity& e, Tile& t)
 {
-
-	return ((e.getX() + e.getWidth() > t.getX() && e.getX() < t.getX() + t.getWidth()) && ((e.getY() + e.getHeight() > t.getY()) && (e.getY() < t.getY() + t.getHeight())));
+			
+	return ((e.getX() + e.getWidth() - 1.0f > t.getX() && e.getX() < t.getX() + t.getWidth()) && ((e.getY() + e.getHeight() > t.getY()) && (e.getY() < t.getY() + t.getHeight())));
 }
 
-bool Physics::is_collision_player_tile_lr(Entity& e, Tile& t)
-{
 
-	return ((e.getX() + e.getWidth() - 0.5f > t.getX() && e.getX() + 0.5f < t.getX() + t.getWidth()) && ((e.getY() + e.getHeight() > t.getY()) && (e.getY() < t.getY() + t.getHeight())));
-}
-
-bool Physics::entity_right_collide_left_tile(Entity& e, Tile& t)
-{
-	return ((e.getX() + e.getWidth() > t.getX() && e.getX() < t.getX() + t.getWidth()) && ((e.getY() + e.getHeight() > t.getY()) && (e.getY() < t.getY() + t.getHeight())));
-}
-
-bool Physics::entity_left_collide_right_tile(Entity& e, Tile& t)
-{
-	return ((e.getX() < t.getX() + t.getWidth() && e.getX() + e.getWidth() > t.getX()) && ((e.getY() + e.getHeight() > t.getY()) && (e.getY() < t.getY() + t.getHeight())));
-}
-
-bool Physics::entity_top_collide_bottom_tile(Entity& e, Tile& t)
-{
-	return ((e.getY() + e.getHeight() > t.getY() && e.getY() < t.getY() + t.getHeight()) && ((e.getX() + e.getWidth() > t.getX()) && (e.getX() < t.getX() + t.getWidth())));
-}
-
-bool Physics::entity_bottom_collide_top_tile(Entity& e, Tile& t)
-{
-	return ((e.getY() < t.getY() + t.getHeight() && e.getY() + e.getHeight() > t.getY()) && ((e.getX() + e.getWidth() > t.getX()) && (e.getX() < t.getX() + t.getWidth())));
-}

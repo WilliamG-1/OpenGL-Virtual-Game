@@ -77,6 +77,10 @@ private:
 	float playerScreenX;
 	float playerScreenY;
 	float playerMiddle;
+	float pastX;
+	float pastY;
+	bool updatePastX = true;
+	bool updatePastY = true;
 
 	float leftBound = (screenWidth / 2) - (screenWidth /2 ) * 0.1; // Left threshold for screen to begin scrolling
 	float rightBound = (screenWidth / 2) + (screenWidth / 2) * 0.1;// Right threshold
@@ -100,6 +104,8 @@ private:
 	std::vector<char> board;
 
 	void do_collisions();
+	void do_x_collisions();
+	void do_y_collisions();
 	void update_dt();
 
 	// Temporary stuff lol for testing

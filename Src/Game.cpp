@@ -142,8 +142,13 @@ void Game::run()
 			shader.setUniform1f("facing_right", 1.0f);
 		processInput();
 		playerView = glm::translate(playerModel, glm::vec3(playerScreenX, player.getY(), 0.0f));
-		player.moveY(dt);
+
 		player.moveX(dt);
+		do_x_collisions();
+		player.moveY(dt);
+		do_y_collisions();
+		
+
 		MVP_Player = playerModel * proj * playerView;
 		
 		shader.setUniformMat4f("u_MVP", MVP_Player);
@@ -156,6 +161,7 @@ void Game::run()
 		renderer.draw(VAOPlayer, shader);
 		do_collisions();
 		playerMiddle = (playerScreenX + playerScreenX + player.getWidth()) / 2;
+		
 		// <================ Player Frames Stuff =================> \\
 		
 
@@ -198,34 +204,42 @@ void Game::processInput()
 	}
 
 	// Left Movement
-	if (glfwGetKey(window.getWindow(), GLFW_KEY_A) == GLFW_PRESS && player.can_move_left())
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_A) == GLFW_PRESS)
 	{
-		
-		if (playerMiddle < leftBound)
+		player.set_moving_right_state(false);
+		player.set_moving_left_state(true);
+		if (player.can_move_left())
 		{
-			player.setVx(-moveSpeed);	
-			level.scroll(moveSpeed, dt);
-		}
-		else {			
-			playerScreenX -= moveSpeed * dt;
-			player.setVx(-moveSpeed);
-			player.set_moving_left_state(true);
+			if (playerMiddle < leftBound && level.get_tile_displacement_x() <= 0)
+			{
+				player.setVx(-moveSpeed);
+				level.scroll(moveSpeed, dt);
+			}
+			else {
+
+				playerScreenX -= moveSpeed * dt;
+				player.setVx(-moveSpeed);
+			}
 		}
 	}
 
 	// Right Movement
-	else if (glfwGetKey(window.getWindow(), GLFW_KEY_D) == GLFW_PRESS && player.can_move_right())
+	else if (glfwGetKey(window.getWindow(), GLFW_KEY_D) == GLFW_PRESS)
 	{
-		
-		if (playerMiddle > rightBound)
+		player.set_moving_left_state(false);
+		player.set_moving_right_state(true);
+		if (player.can_move_right())
 		{
-			player.setVx(moveSpeed);			
-			level.scroll(-moveSpeed, dt);
-		}
-		else {
-			playerScreenX += moveSpeed * dt;
-			player.setVx(moveSpeed);
-			player.set_moving_right_state(true);
+			if (playerMiddle > rightBound)
+			{
+				player.setVx(moveSpeed);
+				level.scroll(-moveSpeed, dt);
+			}
+			else {
+				playerScreenX += moveSpeed * dt;
+				player.setVx(moveSpeed);
+				player.set_moving_right_state(true);
+			}
 		}
 	}
 	else
@@ -243,20 +257,12 @@ void Game::processInput()
 		player.set_can_jump(false);
 		player.set_moving_up_state(true);
 		player.set_can_move_down(true);
-	}
-
-	if (glfwGetKey(window.getWindow(), GLFW_KEY_A) == GLFW_RELEASE)
-	{
-		player.set_moving_left_state(false);
-		player.set_can_move_left(true);
-	}
-	if (glfwGetKey(window.getWindow(), GLFW_KEY_D) == GLFW_RELEASE)
-	{
-		player.set_moving_right_state(false);
-		player.set_can_move_right(true);	
+		player.set_falling_state(false);
 	}
 	
-
+	if (player.getVy() < 0)
+		player.set_falling_state(true);
+	
 	
 }  
 
@@ -295,39 +301,106 @@ void Game::do_collisions()
 {
 	for (auto& tile : level.get_grass_blocks())
 	{
-		
-		if (Physics::is_collision_player_tile(player, tile) && player.is_falling())
+		if (Physics::is_collision_player_tile(player, tile))
 		{
-			player.setVy(0);
-			player.set_can_jump(true);
-			player.set_moving_up_state(false);
-			player.set_can_move_down(false);
-			//int pos = player.getY() + 64.0f;
-			//pos = pos - pos % 64;
-			player.setY(player.getY() + (tile.getY() + tile.getHeight() - player.getY()));
+
+			if (Physics::is_collision_player_tile(player, tile) && player.is_falling())
+			{
+				//updatePastY = false;
+				//player.set_falling_state(false);
+				player.set_can_move_down(false);
+				player.setVy(0);
+				player.set_can_jump(true);
+				//player.set_moving_up_state(false);
+				player.set_can_move_down(false);
+				player.setY(player.getY() + (tile.getY() + tile.getHeight() - player.getY()));
+				//playerScreenY(player.getY() + (tile.getY() + tile.getHeight() - player.getY()))
+			}
+			else {
+				//player.set_can_move_down(false);
+				//jkplayer.set_falling_state(true);
+			}
+			if (Physics::is_collision_player_tile(player, tile) && player.is_jumping())
+			{
+				player.setVy(0);
+				player.setY(player.getY() - (player.getY() + player.getHeight() - tile.getY()));
+				player.set_can_move_down(true);
+			}
+
+
 		}
-		//else if (Physics::is_collision_player_tile(player, *ptr) && player.getVy() > 0)
-		//{
-		//	int pos = player.getY();
-		//	player.setY(player.getY() - (pos % 64));
-		//}
-		if (Physics::is_collision_player_tile_lr(player, tile) && player.is_moving_right())
-		{
-			//int pos = player.getX();
-			//player.setX(player.getX() - (pos % 64 + player.getVx() * dt));
-			player.setX(player.getX() - (player.getX() + player.getWidth() - tile.getX()));
-		}
-		else if (Physics::is_collision_player_tile_lr(player, tile) && player.is_moving_left())
-		{
-			//int pos = player.getX() + 64.0f;
-			//pos = pos - pos % 64 + 5.0f;
-			player.setX(player.getX() + (tile.getX() + tile.getWidth() - player.getX()));
-		}
-		
+
 	}
 
 	player.applyGravity(dt);
 }
+
+void Game::do_x_collisions()
+{
+	if (player.getX() <= 0.05f && player.is_moving_left())
+	{
+		player.setX(0.05f);
+		playerScreenX = 0.05f;
+	}
+
+	for (auto& tile : level.get_grass_blocks())
+	{
+		//if (Physics::is_collision_player_tile(player, tile) && player.is_moving_left())
+		//{
+		//	player.setX(player.getX() + 0.1f);
+		//	playerScreenX = playerScreenX + 0.1f;
+		//}
+		//if (Physics::is_collision_player_tile(player, tile) && player.is_moving_right())
+		//{
+		//	player.setX(player.getX() - 1.0f);
+		//	playerScreenX = playerScreenX - 1.0f;
+		//}
+		if (Physics::is_collision_player_tile(player, tile) && player.is_moving_left())
+		{
+			//updatePastX = false;
+			//player.set_can_move_left(false);
+			player.setX(player.getX() + (tile.getX() + tile.getWidth() - player.getX()));
+			playerScreenX = playerScreenX + (tile.getX() + level.get_tile_displacement_x() + tile.getWidth() - playerScreenX);
+			//player.setX(pastX);
+			//playerScreenX = pastX;
+		}
+		
+		if (Physics::is_collision_player_tile(player, tile) && player.is_moving_right())
+		{
+			player.setX(player.getX() - (player.getX() + player.getWidth() - tile.getX()));
+			playerScreenX = playerScreenX - (playerScreenX + player.getWidth() - tile.getX() - level.get_tile_displacement_x());
+			//playerScreenX = 
+		}
+	}
+}
+
+void Game::do_y_collisions()
+{
+	for (auto& tile : level.get_grass_blocks())
+	{
+		if (Physics::is_collision_player_tile(player, tile))
+		{
+
+			if (Physics::is_collision_player_tile(player, tile) && player.is_falling())
+			{
+				//updatePastY = false;
+				//player.set_falling_state(false);
+				player.set_can_move_down(false);
+				player.setVy(0);
+				player.set_can_jump(true);
+				//player.set_moving_up_state(false);
+				player.set_can_move_down(false);
+				player.setY(player.getY() + (tile.getY() + tile.getHeight() - player.getY()));
+				//playerScreenY(player.getY() + (tile.getY() + tile.getHeight() - player.getY()))
+			}
+			else {
+				//player.set_can_move_down(false);
+				//jkplayer.set_falling_state(true);
+			}
+		}
+	}
+}
+
 void Game::update_dt()
 {
 	this->currentTime = static_cast<float>(glfwGetTime());

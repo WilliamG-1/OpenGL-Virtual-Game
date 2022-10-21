@@ -16,6 +16,7 @@ void Level::init_grass_tiles(float screenHeight)
 
 void Level::scroll(float playerVelocity, float dt)
 {
+	
 	dx += playerVelocity * dt;
 	//for (Tile& block : grassBlocks)
 	//{
