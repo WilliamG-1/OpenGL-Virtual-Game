@@ -43,7 +43,8 @@ private:
 	Texture texture;
 	Texture texture2;
 	Texture playerTex;
-
+	
+	std::vector<std::unique_ptr<Texture>> airFrames;
 	std::vector<std::unique_ptr<Texture>> frames;
 	std::vector<std::unique_ptr<Texture>> runningFrames;
 	float dt;

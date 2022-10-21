@@ -136,7 +136,7 @@ void Game::run()
 		processInput();
 		if (facing_right) shader.setUniform1f("facing_right", 1.0f);
 		else shader.setUniform1f("facing_right", 0.0f);
-
+		if (player.is_jumping()) airFrames[0]->bind();
 		shader.setUniformMat4f("u_MVP", MVP_Player);
 		
 		// Update the frame every time.
@@ -251,7 +251,11 @@ void Game::processInput()
 	}
 	
 	if (player.getVy() < 0)
+	{
+		player.set_moving_up_state(false);
 		player.set_falling_state(true);
+		airFrames[1]->bind();
+	}
 	
 	
 }  
@@ -319,6 +323,13 @@ void Game::init_textures()
 		ptr->setVertAttribs(1, 2, 5, 3);
 	}
 
+	// ----------------- In Air Texture -------------------------- \\ .
+	airFrames.push_back(std::move(std::make_unique<Texture>("Assets/Virtual Guy/Jump.png")));
+	airFrames.push_back(std::move(std::make_unique<Texture>("Assets/Virtual Guy/Fall.png")));
+	for (auto& ptr : airFrames) {
+		ptr->init();
+		ptr->setVertAttribs(1, 2, 5, 3);
+	}
 }
 void Game::do_collisions()
 {
