@@ -35,6 +35,7 @@ private:
 
 	glm::vec2 playerStartingCoords = { 125.0f, 500.0f };
 	Player player;
+	Player hitbox;
 	VertexArray VAO;
 	VertexArray VAOPlayer;
 	Level level;
@@ -49,7 +50,8 @@ private:
 	float currentTime = 0.0f;
 	float lastTime;
 
-	float currentFrame = 0;
+	float idleFrame = 0.0f;
+	float runningFrame = 0.0f;
 
 	Shader shader;
 	//Shader shader2;
@@ -81,11 +83,13 @@ private:
 	float pastY;
 	bool updatePastX = true;
 	bool updatePastY = true;
+	bool facing_right = true;
 
 	float leftBound = (screenWidth / 2) - (screenWidth /2 ) * 0.1; // Left threshold for screen to begin scrolling
 	float rightBound = (screenWidth / 2) + (screenWidth / 2) * 0.1;// Right threshold
 	float* tileVert;
 	float* playerVert;
+	float* hitboxVert;
 	void composeFrame();
 	bool gameRunning = true;
 	bool drawTriangle = true;
@@ -103,11 +107,12 @@ private:
 
 	std::vector<char> board;
 
+	void init_textures();
 	void do_collisions();
 	void do_x_collisions();
 	void do_y_collisions();
+	void update_texture_frame(float& variable, float dt, float max_value);
 	void update_dt();
-
 	// Temporary stuff lol for testing
 	float currentX = 0.0f;
 	float lastX = 0.0f;

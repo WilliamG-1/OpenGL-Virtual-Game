@@ -6,7 +6,7 @@ void Level::init_grass_tiles(float screenHeight)
 	{
 		for (int c = 0; c < get_columns(); c++)
 		{
-			if (board[c + (r * get_columns())] == 'X')
+			if (board[c + (r * get_columns())] == get_grass_tile())
 			{
 				grassBlocks.push_back(Tile(c * 64, (screenHeight - 64) - r * 64, 64.0f, 64.0f));
 			}

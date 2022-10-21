@@ -21,6 +21,6 @@ public:
 
 private:
 	glm::vec2 velocity;
-	float gravity = -70.0f;
+	float gravity = -100.0f;
 };
 

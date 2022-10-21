@@ -9,9 +9,6 @@ float* zArrayConverter::convert_coordinates_to_vert_array(float arr[], float x, 
 
 	// Bottom Right
 	arr[3] = 2.0f;
-		// Top Right
-
-		// Top Left
 	return arr;
 }
 

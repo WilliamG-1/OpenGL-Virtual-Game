@@ -6,7 +6,7 @@
 Game::Game()
 	:
 	wrapper(), player(playerStartingCoords.x, playerStartingCoords.y, 64.0f, 64.0f),
-	VAO(), // VAOPlayer(),
+	VAO(), hitbox(playerStartingCoords.x + 5.0f, playerStartingCoords.y + 5.0f, 44.0f, 44.0f),
 	window(screenWidth, screenHeight, "OpenGl Game"),
 	texture("Assets/Background/Green.png"),
 	texture2("Assets/Tiles/GrassTile.png"),
@@ -15,18 +15,16 @@ Game::Game()
 	MVP_Scene(1.0f), MVP_Player(1.0f), 
 	playerModel(1.0f), playerView(1.0f)
 {
-	
-	//idleAnimation.push_back(Texture("Assets/Virtual Guy/Idle/Idle10.png"));
-	
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	unsigned int indices[6] = {
 		0, 1, 2,  2, 3, 0
 	};
 	unsigned int indices2[6] = {
 		0, 1, 2,  2, 3, 0
 	};
-	//VAO.init(wrapper, siz eof(vertices) / sizeof(float), sizeof(indices) / sizeof(unsigned int));
 	float a[20];
-	//tileVert = zArrayConverter::convert_coordinates_to_vert_tex_array(a, backgroundTile.getX(), backgroundTile.getY(), backgroundTile.getWidth(), backgroundTile.getHeight(), 0.0f, 0.0f, 1.0f, 1.0f);
 	tileVert = zArrayConverter::convert_coordinates_to_vert_tex_array(a, 0.0f, screenHeight - 64.0f, 64.0f, 64.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 	VAO.init(tileVert, 20, indices, sizeof(indices) / sizeof(unsigned int));
 	// VAO Layout location
@@ -37,38 +35,24 @@ Game::Game()
 
 	//  Player Stuff
 	float b[20];
-	playerVert = zArrayConverter::convert_coordinates_to_vert_tex_array(b, 0.0f, 0.0f, player.getWidth(), player.getHeight(), 0.125f, 0.0f, 0.75f, 0.825f);
-	playerScreenX = player.getX();
+	playerVert = zArrayConverter::convert_coordinates_to_vert_tex_array(b, 0.0f, 0.0f, player.getWidth(), player.getHeight(), 0.125f, 0.0f, 0.75f, 0.875f);
+
 	playerScreenY = player.getY();
 
 	playerView = glm::translate(glm::mat4(1.0f), glm::vec3(playerScreenX, playerScreenY, 0.0f));
 	VAOPlayer.init(playerVert, 20, indices2, sizeof(indices2) / sizeof(unsigned int));
 	VAOPlayer.setVertexAttribPointersf(0, 3, 5, 0);
-
+	init_textures();
 	MVP_Player = playerModel * proj * playerView;
 
-	playerTex.init();
-	playerTex.setVertAttribs(1, 2, 5, 3);
+
+
 	
-	for (int i = 0; i < 9; i++)
-	{
-		std::string s = std::to_string(i);
-		frames.push_back(std::move(std::make_unique<Texture>("Assets/Virtual Guy/Idle/Idle0" + s + ".png")));
-	}
-	frames.push_back(std::move(std::make_unique<Texture>("Assets/Virtual Guy/Idle/Idle10.png")));
-
-	for (auto& ptr : frames)
-	{
-		ptr->init();
-		ptr->setVertAttribs(1, 2, 5, 3);
-	}
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	proj = glm::ortho(0.0f, screenWidth, 0.0f, screenHeight, -1.0f, 1.0f);
 	view = glm::translate(model, glm::vec3(leftRightMove, 0.0f, 0.0f));
 	
+
 	MVP_Scene = model * proj * view;
 	MVP_Player = playerModel * proj * playerView;
 	board = level.get_board();
@@ -118,13 +102,13 @@ void Game::run()
 					MVP_Scene = model * proj * view;
 					shader.setUniformMat4f("u_MVP", MVP_Scene);
 
-					if (board[c + (r * level.get_columns())] == 'X')
+					if (board[c + (r * level.get_columns())] == level.get_grass_tile())
 					{
-						texture2.bind();
+						texture2.bind(); // Bind grass block tile
 					}
-					if (board[c + (r * level.get_columns())] == '0')
+					if (board[c + (r * level.get_columns())] == level.get_background_tile())
 					{
-						texture.bind();
+						texture.bind();	// Bind background texture
 					}
 
 					renderer.draw(VAO, shader);
@@ -140,7 +124,6 @@ void Game::run()
 			shader.setUniform1f("facing_right", 0.0f);
 		if (glfwGetKey(window.getWindow(), GLFW_KEY_R) == GLFW_PRESS)
 			shader.setUniform1f("facing_right", 1.0f);
-		processInput();
 		playerView = glm::translate(playerModel, glm::vec3(playerScreenX, player.getY(), 0.0f));
 
 		player.moveX(dt);
@@ -150,16 +133,18 @@ void Game::run()
 		
 
 		MVP_Player = playerModel * proj * playerView;
-		
+		processInput();
+		if (facing_right) shader.setUniform1f("facing_right", 1.0f);
+		else shader.setUniform1f("facing_right", 0.0f);
+
 		shader.setUniformMat4f("u_MVP", MVP_Player);
-		frames[currentFrame]->bind();
+		
 		// Update the frame every time.
-		currentFrame += 0.115f;
-		if (currentFrame > 9.9)
-			currentFrame = 0.0f;
+		update_texture_frame(idleFrame, dt, 10);
+		update_texture_frame(runningFrame, dt, 11);
 
 		renderer.draw(VAOPlayer, shader);
-		do_collisions();
+		//do_collisions();
 		playerMiddle = (playerScreenX + playerScreenX + player.getWidth()) / 2;
 		
 		// <================ Player Frames Stuff =================> \\
@@ -206,6 +191,8 @@ void Game::processInput()
 	// Left Movement
 	if (glfwGetKey(window.getWindow(), GLFW_KEY_A) == GLFW_PRESS)
 	{
+		facing_right = false;
+		runningFrames[runningFrame]->bind();
 		player.set_moving_right_state(false);
 		player.set_moving_left_state(true);
 		if (player.can_move_left())
@@ -226,6 +213,8 @@ void Game::processInput()
 	// Right Movement
 	else if (glfwGetKey(window.getWindow(), GLFW_KEY_D) == GLFW_PRESS)
 	{
+		facing_right = true;
+		runningFrames[runningFrame]->bind();
 		player.set_moving_left_state(false);
 		player.set_moving_right_state(true);
 		if (player.can_move_right())
@@ -244,6 +233,7 @@ void Game::processInput()
 	}
 	else
 	{
+		frames[idleFrame]->bind();
 		player.setVx(0);
 		player.set_moving_right_state(false);
 		player.set_moving_left_state(false);
@@ -296,7 +286,40 @@ void Game::composeFrame()
 	shader.setUniformMat4f("u_MVP", MVP_Scene);
 	level.init_grass_tiles(768.0f);
 } 
+void Game::init_textures()
+{
+	playerTex.init();
+	playerTex.setVertAttribs(1, 2, 5, 3);
 
+	
+	// ------------------ Idle Texture ------------------------ \\ .
+	for (int i = 0; i < 9; i++)
+	{
+		std::string s = std::to_string(i);
+		frames.push_back(std::move(std::make_unique<Texture>("Assets/Virtual Guy/Idle/Idle0" + s + ".png")));
+	}
+	frames.push_back(std::move(std::make_unique<Texture>("Assets/Virtual Guy/Idle/Idle10.png")));
+
+	for (auto& ptr : frames){
+		ptr->init();
+		ptr->setVertAttribs(1, 2, 5, 3);
+	}
+
+	// ------------------ Running Texture ------------------------ \\ .
+	for (int i = 0; i < 9; i++)
+	{
+		std::string s = std::to_string(i);
+		runningFrames.push_back(std::move(std::make_unique<Texture>("Assets/Virtual Guy/Run/running0" + s + ".png")));
+	}
+	runningFrames.push_back(std::move(std::make_unique<Texture>("Assets/Virtual Guy/Run/running10.png")));
+	runningFrames.push_back(std::move(std::make_unique<Texture>("Assets/Virtual Guy/Run/running11.png")));
+
+	for (auto& ptr : runningFrames) {
+		ptr->init();
+		ptr->setVertAttribs(1, 2, 5, 3);
+	}
+
+}
 void Game::do_collisions()
 {
 	for (auto& tile : level.get_grass_blocks())
@@ -372,8 +395,8 @@ void Game::do_x_collisions()
 			//playerScreenX = 
 		}
 	}
+	player.applyGravity(dt);
 }
-
 void Game::do_y_collisions()
 {
 	for (auto& tile : level.get_grass_blocks())
@@ -386,12 +409,18 @@ void Game::do_y_collisions()
 				//updatePastY = false;
 				//player.set_falling_state(false);
 				player.set_can_move_down(false);
-				player.setVy(0);
+				player.setVy(5.0f);
 				player.set_can_jump(true);
 				//player.set_moving_up_state(false);
 				player.set_can_move_down(false);
 				player.setY(player.getY() + (tile.getY() + tile.getHeight() - player.getY()));
 				//playerScreenY(player.getY() + (tile.getY() + tile.getHeight() - player.getY()))
+			}
+			if (Physics::is_collision_player_tile(player, tile) && player.is_jumping())
+			{
+				player.setVy(0);
+				player.setY(player.getY() - (player.getY() + player.getHeight() - tile.getY()));
+				player.set_can_move_down(true);
 			}
 			else {
 				//player.set_can_move_down(false);
@@ -400,7 +429,12 @@ void Game::do_y_collisions()
 		}
 	}
 }
-
+void Game::update_texture_frame(float& variable, float dt, float max)
+{
+	variable += dt * 1.5;
+	if (variable >= max)
+		variable = 0;
+}
 void Game::update_dt()
 {
 	this->currentTime = static_cast<float>(glfwGetTime());
