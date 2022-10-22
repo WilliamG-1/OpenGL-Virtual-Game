@@ -80,6 +80,8 @@ bool Entity::can_move_down() const
 	return canMove[static_cast<int>(CanMove::DOWN)];
 }
 
+// ===================== Getters ========================== \\
+
 float Entity::getX() const
 {
 	return x;
@@ -100,6 +102,18 @@ float Entity::getHeight() const
 	return height;
 }
 
+float Entity::getXVelocity() const
+{
+	return xVel;
+}
+
+float Entity::getYVelocity() const
+{
+	return yVel;
+}
+
+// ====================== Setters ========================== \\
+
 void Entity::setX(float x)
 {
 	this->x = x;
@@ -109,7 +123,6 @@ void Entity::setY(float y)
 {
 	this->y = y;
 }
-
 
 void Entity::set_moving_right_state(bool state)
 {

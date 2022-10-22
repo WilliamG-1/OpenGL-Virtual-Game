@@ -39,6 +39,7 @@ Game::Game()
 	MVP_Player = playerModel * proj * playerView;
 	board = level.get_board();
 	playerMiddle = (playerScreenX + playerScreenX + player.getWidth()) / 2;
+	
 }
 
 void Game::run()
@@ -103,11 +104,15 @@ void Game::run()
 		
 		// <================ Enemy Stuff =================> \\
 		
+		if (!pig.is_enraged())
+			do_player_entity_collisions();
+		do_pig_animations(pig, pigIdle, pigWalk, pigRunning, pigCurrentFrame);
+		pig.move(dt);
 		pigView = glm::translate(model, glm::vec3(pig.getX() + level.get_tile_displacement_x(), pig.getY(), 0.0f));
 		MVP_Scene = model * proj * pigView;
 		shader.setUniformMat4f("u_MVP", MVP_Scene);
-		update_texture_frame(pigCurrentIdleFrame, dt, 9);
-		pigIdle[pigCurrentIdleFrame]->bind();
+		//update_texture_frame(pigCurrentFrame, dt, 9);
+		//pigIdle[pigCurrentIdleFrame]->bind();
 		renderer.draw(VAOPig, shader);
 
 		// <================ Player Frames Stuff =================> \\
@@ -205,7 +210,7 @@ void Game::processInput()
 		player.set_moving_right_state(true);
 		if (player.can_move_right())
 		{
-			if (playerMiddle > rightBound)
+			if (playerMiddle > rightBound && level.get_tile_displacement_x() >= -256)
 			{
 				player.setVx(moveSpeed);
 				level.scroll(-moveSpeed, dt);
@@ -408,44 +413,11 @@ void Game::init_vertices(Entity& entity, VertexArray& e_VAO, float(&vert)[20], f
 	// Total of 5 values (plus the texture) so 5 as stride
 	// 0 Offset to begn vertex coords
 }
-void Game::do_collisions()
+void Game::do_player_entity_collisions()
 {
-	for (auto& tile : level.get_grass_blocks())
-	{
-		if (Physics::is_collision_player_tile(player, tile))
-		{
-
-			if (Physics::is_collision_player_tile(player, tile) && player.is_falling())
-			{
-				//updatePastY = false;
-				//player.set_falling_state(false);
-				player.set_can_move_down(false);
-				player.setVy(0);
-				player.set_can_jump(true);
-				//player.set_moving_up_state(false);
-				player.set_can_move_down(false);
-				player.setY(player.getY() + (tile.getY() + tile.getHeight() - player.getY()));
-				//playerScreenY(player.getY() + (tile.getY() + tile.getHeight() - player.getY()))
-			}
-			else {
-				//player.set_can_move_down(false);
-				//jkplayer.set_falling_state(true);
-			}
-			if (Physics::is_collision_player_tile(player, tile) && player.is_jumping())
-			{
-				player.setVy(0);
-				player.setY(player.getY() - (player.getY() + player.getHeight() - tile.getY()));
-				player.set_can_move_down(true);
-			}
-
-
-		}
-
-	}
-
-	player.applyGravity(dt);
+	if (Physics::is_collision_player_entity(player, pig))
+		pig.enrage();
 }
-
 void Game::do_x_collisions()
 {
 	if (player.getX() <= 0.05f && player.is_moving_left())
@@ -453,7 +425,11 @@ void Game::do_x_collisions()
 		player.setX(0.05f);
 		playerScreenX = 0.05f;
 	}
-
+	if (player.getX() + player.getWidth() >= 1276)
+	{
+		player.setX(1276 - 64);
+		playerScreenX = (screenWidth - 64);
+	}
 	for (auto& tile : level.get_grass_blocks())
 	{
 		//if (Physics::is_collision_player_tile(player, tile) && player.is_moving_left())
@@ -515,6 +491,31 @@ void Game::do_y_collisions()
 				//jkplayer.set_falling_state(true);
 			}
 		}
+	}
+}
+void Game::do_pig_animations(Pig& p, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkVector, std::vector<std::unique_ptr<Texture>>& runningVector, float& currentFrame)
+{
+	currentFrame += dt * 2;
+	if (p.is_enraged())
+	{
+		if (currentFrame > (float)(runningVector.size() - 1) + 0.5f)
+			currentFrame = 0.0f;
+		// Invert texture depending on velocity (negative means moving left, positive means moving right) For pig Texture, default is facing left, so values are switched
+		if (p.getXVelocity() > 0)
+			shader.setUniform1f("facing_right", 0.0f);
+		else if (p.getXVelocity() < 0) 
+			shader.setUniform1f("facing_right", 1.0f);
+		runningVector[(int)currentFrame]->bind();
+	}
+	else
+	{
+		if (currentFrame > (float)(walkVector.size() - 1) + 0.5f)
+			currentFrame = 0.0f;
+		if (p.getXVelocity() > 0)
+			shader.setUniform1f("facing_right", 0.0f);
+		else if (p.getXVelocity() < 0)
+			shader.setUniform1f("facing_right", 1.0f);
+		walkVector[(int)currentFrame]->bind();
 	}
 }
 void Game::update_texture_frame(float& variable, float dt, float max)

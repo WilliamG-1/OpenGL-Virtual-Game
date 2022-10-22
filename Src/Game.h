@@ -56,8 +56,8 @@ private:
 	std::vector<std::unique_ptr<Texture>> pigIdle;
 	std::vector<std::unique_ptr<Texture>> pigWalk;
 	std::vector<std::unique_ptr<Texture>> pigRunning;
+	float pigCurrentFrame = 0.0f;
 
-	float pigCurrentIdleFrame = 0.0f;
 	glm::mat4 pigView;
 	
 	float dt;
@@ -111,9 +111,11 @@ private:
 	void init_player_textures();
 	void init_enemy_texture(VertexArray& enemy_vao, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkingVector, std::vector<std::unique_ptr<Texture>>& runningVector, unsigned int idleFrames, unsigned int walkingFrames, unsigned int runningFrames, const std::string& idlePath, const std::string& walkPath, const std::string& runningPath);
 	void init_vertices(Entity& entity, VertexArray& e_VAO, float (&vert)[20],float x, float y, float tex_left, float tex_right, float tex_width, float tex_height);
-	void do_collisions();
+	void do_player_entity_collisions();
 	void do_x_collisions();
 	void do_y_collisions();
+	void do_pig_animations(Pig& p, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkVector, std::vector<std::unique_ptr<Texture>>& runningVector, float& currentFrame);
+
 	void update_texture_frame(float& variable, float dt, float max_value);
 	void update_dt();
 	// Temporary stuff lol for testing
