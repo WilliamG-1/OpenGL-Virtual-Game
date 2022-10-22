@@ -7,10 +7,10 @@ Game::Game()
 	:
 	wrapper(), player(playerStartingCoords.x, playerStartingCoords.y, 64.0f, 64.0f),
 	VAO(), hitbox(playerStartingCoords.x + 5.0f, playerStartingCoords.y + 5.0f, 44.0f, 44.0f),
+	pig(0.0f, 0.0f, 45.0f, 45.0f),
 	window(screenWidth, screenHeight, "OpenGl Game"),
 	texture("Assets/Background/Green.png"),
 	texture2("Assets/Tiles/GrassTile.png"),
-	playerTex("Assets/Virtual Guy/Idle/Idle00.png"),
 	model(1.0f), view(1.0f), proj(1.0f),
 	MVP_Scene(1.0f), MVP_Player(1.0f), 
 	playerModel(1.0f), playerView(1.0f)
@@ -18,37 +18,28 @@ Game::Game()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	unsigned int indices[6] = {
-		0, 1, 2,  2, 3, 0
-	};
+	
 	unsigned int indices2[6] = {
 		0, 1, 2,  2, 3, 0
 	};
-	float a[20];
-	tileVert = zArrayConverter::convert_coordinates_to_vert_tex_array(a, 0.0f, screenHeight - 64.0f, 64.0f, 64.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-	VAO.init(tileVert, 20, indices, sizeof(indices) / sizeof(unsigned int));
+	//VAO.init(tileVert, 20, indices, sizeof(indices) / sizeof(unsigned int));
 	// VAO Layout location
 	// 3 coordinates, so size of 3 per attributes
 	// Total of 5 values (plus the texture) so 5 as stride
 	// 0 Offset to begn vertex coords
-	VAO.setVertexAttribPointersf(0, 3, 5, 0);
+	//VAO.setVertexAttribPointersf(0, 3, 5, 0);
+	init_vertices(player, VAO, tileVert, 0.0f, 704.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 
-	//  Player Stuff
-	float b[20];
-	playerVert = zArrayConverter::convert_coordinates_to_vert_tex_array(b, 0.0f, 0.0f, player.getWidth(), player.getHeight(), 0.125f, 0.0f, 0.75f, 0.875f);
 
-	playerScreenY = player.getY();
+	// Player Stuff
+	init_vertices(player, VAOPlayer, playerVert, 0.0f, 0.0f, 0.125f, 0.0f, 0.75f, 0.875f);
+	init_player_textures();
 
-	playerView = glm::translate(glm::mat4(1.0f), glm::vec3(playerScreenX, playerScreenY, 0.0f));
-	VAOPlayer.init(playerVert, 20, indices2, sizeof(indices2) / sizeof(unsigned int));
-	VAOPlayer.setVertexAttribPointersf(0, 3, 5, 0);
-	init_textures();
 	MVP_Player = playerModel * proj * playerView;
+	playerView = glm::translate(glm::mat4(1.0f), glm::vec3(playerScreenX, playerScreenY, 0.0f));
 
 
 
-	
-	
 	proj = glm::ortho(0.0f, screenWidth, 0.0f, screenHeight, -1.0f, 1.0f);
 	view = glm::translate(model, glm::vec3(leftRightMove, 0.0f, 0.0f));
 	
@@ -134,9 +125,7 @@ void Game::run()
 
 		MVP_Player = playerModel * proj * playerView;
 		processInput();
-		if (facing_right) shader.setUniform1f("facing_right", 1.0f);
-		else shader.setUniform1f("facing_right", 0.0f);
-		if (player.is_jumping()) airFrames[0]->bind();
+		
 		shader.setUniformMat4f("u_MVP", MVP_Player);
 		
 		// Update the frame every time.
@@ -256,17 +245,20 @@ void Game::processInput()
 		player.set_falling_state(true);
 		airFrames[1]->bind();
 	}
-	
+	if (facing_right) shader.setUniform1f("facing_right", 1.0f);
+	else shader.setUniform1f("facing_right", 0.0f);
+	if (player.is_jumping()) airFrames[0]->bind();
 	
 }  
 
 void Game::composeFrame()
 {
-	VAO.bufferVertexData(20, vertices);
+	VAO.bufferVertexData(20, tileVert);
 	texture.init();
 	texture.setVertAttribs(1, 2, 5, 3);
 	texture2.init();
 	texture2.setVertAttribs(1, 2, 5, 3);
+
 
 	std::string vertSource;
 	std::string fragSource;
@@ -290,10 +282,10 @@ void Game::composeFrame()
 	shader.setUniformMat4f("u_MVP", MVP_Scene);
 	level.init_grass_tiles(768.0f);
 } 
-void Game::init_textures()
+void Game::init_player_textures()
 {
-	playerTex.init();
-	playerTex.setVertAttribs(1, 2, 5, 3);
+	//playerTex.init();
+	//playerTex.setVertAttribs(1, 2, 5, 3);
 
 	
 	// ------------------ Idle Texture ------------------------ \\ .
@@ -330,6 +322,12 @@ void Game::init_textures()
 		ptr->init();
 		ptr->setVertAttribs(1, 2, 5, 3);
 	}
+}
+void Game::init_vertices(Entity& entity, VertexArray& e_VAO, float(&vert)[20], float x, float y, float tex_left, float tex_right, float tex_width, float tex_height)
+{
+	zArrayConverter::convert_coordinates_to_vert_tex_array_reference(vert, x, y, entity.getWidth(), entity.getHeight(), tex_left, tex_right, tex_width, tex_height);
+	e_VAO.init(vert, 20, indices, 6);
+	e_VAO.setVertexAttribPointersf(0, 3, 5, 0);
 }
 void Game::do_collisions()
 {

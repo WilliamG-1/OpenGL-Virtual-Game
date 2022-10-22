@@ -10,7 +10,7 @@
 #include "Player.h"
 #include "zArrayConverter.h"
 #include "Tile.h"
-
+#include "Enemy.h"
 #include "Physics.h"
 
 enum class ArrayType {
@@ -36,17 +36,25 @@ private:
 	glm::vec2 playerStartingCoords = { 125.0f, 500.0f };
 	Player player;
 	Player hitbox;
+	Enemy pig;
+
 	VertexArray VAO;
 	VertexArray VAOPlayer;
+	VertexArray VAOPig;
 	Level level;
 	Tile backgroundTile;
 	Texture texture;
 	Texture texture2;
-	Texture playerTex;
 	
 	std::vector<std::unique_ptr<Texture>> airFrames;
 	std::vector<std::unique_ptr<Texture>> frames;
 	std::vector<std::unique_ptr<Texture>> runningFrames;
+	// ------------ Enemies ----------- \\
+
+	std::vector<std::unique_ptr<Texture>> pigIdle;
+	std::vector<std::unique_ptr<Texture>> pigWalk;
+	std::vector<std::unique_ptr<Texture>> pigRunning;
+	
 	float dt;
 	float currentTime = 0.0f;
 	float lastTime;
@@ -57,24 +65,9 @@ private:
 	Shader shader;
 	//Shader shader2;
 	Renderer renderer;
-	
-	// Tile Vertices
-	float vertices[20] = {
-		// Vertex Coords			Texture Coords
-		000.0f, 704.0f, 0.0f,		0.0f, 0.0f,     // Bottom Left  (0)
-		064.0f, 704.0f, 0.0f,		1.0f, 0.0f,     // Bottom Right (1)
-		064.0f, 768.0f, 0.0f,		1.0f, 1.0f,     // Top Right    (2)
-		000.0f, 768.0f, 0.0f,		0.0f, 1.0f		// Top Left     (3)
 
-	};
-
-	// Player Vertices
-	float vertices2[20] = {
-		// Vertex Coords		Texture Coords
-		00.0f, 00.0f, 0.0f,		0.125f, 0.000f,	 // Bottom Left  (0)
-		64.0f, 00.0f, 0.0f,		0.875f, 0.000f,	 // Bottom Right (1)
-		64.0f, 64.0f, 0.0f,		0.875f, 0.825f,	 // Top Right    (2)
-		00.0f, 64.0f, 0.0f,		0.125f, 0.825f	 // Top Left     (3)
+	unsigned int indices[6] = {
+		0, 1, 2,  2, 3, 0
 	};
 
 	float playerScreenX;
@@ -88,9 +81,11 @@ private:
 
 	float leftBound = (screenWidth / 2) - (screenWidth /2 ) * 0.1; // Left threshold for screen to begin scrolling
 	float rightBound = (screenWidth / 2) + (screenWidth / 2) * 0.1;// Right threshold
-	float* tileVert;
-	float* playerVert;
-	float* hitboxVert;
+
+	float tileVert[20];
+	float playerVert[20];
+	float pigVert[20];
+
 	void composeFrame();
 	bool gameRunning = true;
 	bool drawTriangle = true;
@@ -108,7 +103,9 @@ private:
 
 	std::vector<char> board;
 
-	void init_textures();
+	void init_player_textures();
+	void init_enemy_texture(VertexArray& enemy_vao, float y);
+	void init_vertices(Entity& entity, VertexArray& e_VAO, float (&vert)[20],float x, float y, float tex_left, float tex_right, float tex_width, float tex_height);
 	void do_collisions();
 	void do_x_collisions();
 	void do_y_collisions();
