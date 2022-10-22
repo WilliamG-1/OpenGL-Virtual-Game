@@ -10,7 +10,7 @@
 #include "Player.h"
 #include "zArrayConverter.h"
 #include "Tile.h"
-#include "Enemy.h"
+#include "Pig.h"
 #include "Physics.h"
 
 enum class ArrayType {
@@ -36,7 +36,7 @@ private:
 	glm::vec2 playerStartingCoords = { 125.0f, 500.0f };
 	Player player;
 	Player hitbox;
-	Enemy pig;
+	
 
 	VertexArray VAO;
 	VertexArray VAOPlayer;
@@ -50,10 +50,15 @@ private:
 	std::vector<std::unique_ptr<Texture>> frames;
 	std::vector<std::unique_ptr<Texture>> runningFrames;
 	// ------------ Enemies ----------- \\
-
+	
+	glm::vec2 pigCoords = { 750.0f, 64.0f };
+	Pig pig;
 	std::vector<std::unique_ptr<Texture>> pigIdle;
 	std::vector<std::unique_ptr<Texture>> pigWalk;
 	std::vector<std::unique_ptr<Texture>> pigRunning;
+
+	float pigCurrentIdleFrame = 0.0f;
+	glm::mat4 pigView;
 	
 	float dt;
 	float currentTime = 0.0f;
@@ -104,7 +109,7 @@ private:
 	std::vector<char> board;
 
 	void init_player_textures();
-	void init_enemy_texture(VertexArray& enemy_vao, float y);
+	void init_enemy_texture(VertexArray& enemy_vao, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkingVector, std::vector<std::unique_ptr<Texture>>& runningVector, unsigned int idleFrames, unsigned int walkingFrames, unsigned int runningFrames, const std::string& idlePath, const std::string& walkPath, const std::string& runningPath);
 	void init_vertices(Entity& entity, VertexArray& e_VAO, float (&vert)[20],float x, float y, float tex_left, float tex_right, float tex_width, float tex_height);
 	void do_collisions();
 	void do_x_collisions();

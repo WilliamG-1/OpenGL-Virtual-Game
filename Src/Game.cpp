@@ -7,43 +7,34 @@ Game::Game()
 	:
 	wrapper(), player(playerStartingCoords.x, playerStartingCoords.y, 64.0f, 64.0f),
 	VAO(), hitbox(playerStartingCoords.x + 5.0f, playerStartingCoords.y + 5.0f, 44.0f, 44.0f),
-	pig(0.0f, 0.0f, 45.0f, 45.0f),
+	pig(pigCoords.x, pigCoords.y, 96.0f, 80.0f),
 	window(screenWidth, screenHeight, "OpenGl Game"),
 	texture("Assets/Background/Green.png"),
 	texture2("Assets/Tiles/GrassTile.png"),
 	model(1.0f), view(1.0f), proj(1.0f),
 	MVP_Scene(1.0f), MVP_Player(1.0f), 
-	playerModel(1.0f), playerView(1.0f)
+	playerModel(1.0f), playerView(1.0f),
+	pigView(1.0f)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	
-	unsigned int indices2[6] = {
-		0, 1, 2,  2, 3, 0
-	};
-	//VAO.init(tileVert, 20, indices, sizeof(indices) / sizeof(unsigned int));
-	// VAO Layout location
-	// 3 coordinates, so size of 3 per attributes
-	// Total of 5 values (plus the texture) so 5 as stride
-	// 0 Offset to begn vertex coords
-	//VAO.setVertexAttribPointersf(0, 3, 5, 0);
 	init_vertices(player, VAO, tileVert, 0.0f, 704.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-
-
 	// Player Stuff
 	init_vertices(player, VAOPlayer, playerVert, 0.0f, 0.0f, 0.125f, 0.0f, 0.75f, 0.875f);
 	init_player_textures();
 
+	init_vertices(pig, VAOPig, pigVert, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	init_enemy_texture(VAOPig, pigIdle, pigWalk, pigRunning, 10, 16, 12, "Assets/Enemies/AngryPig/Idle/Idle", "Assets/Enemies/AngryPig/Walk/Walk", "Assets/Enemies/AngryPig/Run/Run");
+
 	MVP_Player = playerModel * proj * playerView;
 	playerView = glm::translate(glm::mat4(1.0f), glm::vec3(playerScreenX, playerScreenY, 0.0f));
-
-
+	
+	pigView = glm::translate(glm::mat4(1.0f), glm::vec3(pig.getX(), pig.getY(), 0.0f));
 
 	proj = glm::ortho(0.0f, screenWidth, 0.0f, screenHeight, -1.0f, 1.0f);
 	view = glm::translate(model, glm::vec3(leftRightMove, 0.0f, 0.0f));
 	
-
 	MVP_Scene = model * proj * view;
 	MVP_Player = playerModel * proj * playerView;
 	board = level.get_board();
@@ -77,6 +68,8 @@ void Game::run()
 		ImGui::Text("Player Screen Coords: (%.2f, %.2f)", playerScreenX, playerScreenY);
 		ImGui::Text("Bounds: (%.2f, %.2f)", leftBound, rightBound);
 		ImGui::Text("pCenter = %.2f", playerMiddle);
+		ImGui::Text("Pig = (%.2f, %.2f)", pig.getX(), pig.getY());
+		ImGui::Text("Collision: %d", Physics::is_collision_player_entity(player, pig));
 		ImGui::End();	
 		// <---------------- Rendering Code --------------------> \\
 
@@ -108,6 +101,15 @@ void Game::run()
 			}
 		}
 		
+		// <================ Enemy Stuff =================> \\
+		
+		pigView = glm::translate(model, glm::vec3(pig.getX() + level.get_tile_displacement_x(), pig.getY(), 0.0f));
+		MVP_Scene = model * proj * pigView;
+		shader.setUniformMat4f("u_MVP", MVP_Scene);
+		update_texture_frame(pigCurrentIdleFrame, dt, 9);
+		pigIdle[pigCurrentIdleFrame]->bind();
+		renderer.draw(VAOPig, shader);
+
 		// <================ Player Frames Stuff =================> \\
 
 		shader.setUniform1f("player_being_rendered", 1.0f);
@@ -121,7 +123,7 @@ void Game::run()
 		do_x_collisions();
 		player.moveY(dt);
 		do_y_collisions();
-		
+
 
 		MVP_Player = playerModel * proj * playerView;
 		processInput();
@@ -136,11 +138,6 @@ void Game::run()
 		//do_collisions();
 		playerMiddle = (playerScreenX + playerScreenX + player.getWidth()) / 2;
 		
-		// <================ Player Frames Stuff =================> \\
-		
-
-		
-
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		// Switch buffers lol
@@ -284,12 +281,8 @@ void Game::composeFrame()
 } 
 void Game::init_player_textures()
 {
-	//playerTex.init();
-	//playerTex.setVertAttribs(1, 2, 5, 3);
-
-	
 	// ------------------ Idle Texture ------------------------ \\ .
-	for (int i = 0; i < 9; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		std::string s = std::to_string(i);
 		frames.push_back(std::move(std::make_unique<Texture>("Assets/Virtual Guy/Idle/Idle0" + s + ".png")));
@@ -302,7 +295,7 @@ void Game::init_player_textures()
 	}
 
 	// ------------------ Running Texture ------------------------ \\ .
-	for (int i = 0; i < 9; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		std::string s = std::to_string(i);
 		runningFrames.push_back(std::move(std::make_unique<Texture>("Assets/Virtual Guy/Run/running0" + s + ".png")));
@@ -323,11 +316,97 @@ void Game::init_player_textures()
 		ptr->setVertAttribs(1, 2, 5, 3);
 	}
 }
+
+void Game::init_enemy_texture(VertexArray& enemy_vao, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkVector, std::vector<std::unique_ptr<Texture>>& runningVector, unsigned int idleFrames, unsigned int walkFrames, unsigned int runningFrames, const std::string& idlePath, const std::string& walkPath, const std::string& runningPath)
+{
+	// --------------------------------- Idle Texture -------------------------------------------- \\ .
+	if (idleFrames > 10) {
+		unsigned int difference = idleFrames - 10;
+		for (int i = 0; i < 10; i++)
+		{
+			std::string s = std::to_string(i);
+			idleVector.push_back(std::move(std::make_unique<Texture>(idlePath + "0" + s + ".png")));
+		}
+		for (int i = 10; i < 10 + difference; i++) 
+		{
+			std::string s = std::to_string(i);
+			idleVector.push_back(std::move(std::make_unique<Texture>(idlePath + s + ".png")));
+		}
+	}
+	else {
+		for (int i = 0; i < idleFrames; i++)
+		{
+			std::string s = std::to_string(i);
+			idleVector.push_back(std::move(std::make_unique<Texture>(idlePath + "0" + s + ".png")));
+		}
+	}
+	for (auto& ptr : idleVector) {
+		ptr->init();
+		ptr->setVertAttribs(1, 2, 5, 3);
+	}
+
+	
+	// --------------------------------- Walking Texture -------------------------------------------- \\ .
+	if (walkFrames > 10) {
+		unsigned int difference = walkFrames - 10;
+		for (int i = 0; i < 10; i++)
+		{
+			std::string s = std::to_string(i);
+			walkVector.push_back(std::move(std::make_unique<Texture>(walkPath + "0" + s + ".png")));
+		}
+		for (int i = 10; i < 10 + difference; i++)
+		{
+			std::string s = std::to_string(i);
+			walkVector.push_back(std::move(std::make_unique<Texture>(walkPath + s + ".png")));
+		}
+	}
+	else {
+		for (int i = 0; i < walkFrames; i++)
+		{
+			std::string s = std::to_string(i);
+			walkVector.push_back(std::move(std::make_unique<Texture>(walkPath + "0" + s + ".png")));
+		}
+	}
+	for (auto& ptr : walkVector) {
+		ptr->init();
+		ptr->setVertAttribs(1, 2, 5, 3);
+	}
+
+	// --------------------------------- Running Texture -------------------------------------------- \\ .
+	if (runningFrames > 10) {
+		unsigned int difference = runningFrames - 10;
+		for (int i = 0; i < 10; i++)
+		{
+			std::string s = std::to_string(i);
+			runningVector.push_back(std::move(std::make_unique<Texture>(runningPath + "0" + s + ".png")));
+		}
+		for (int i = 10; i < 10 + difference; i++)
+		{
+			std::string s = std::to_string(i);
+			runningVector.push_back(std::move(std::make_unique<Texture>(runningPath + s + ".png")));
+		}
+	}
+	else {
+		for (int i = 0; i < runningFrames; i++)
+		{
+			std::string s = std::to_string(i);
+			runningVector.push_back(std::move(std::make_unique<Texture>(runningPath + "0" + s + ".png")));
+		}
+	}
+	for (auto& ptr : runningVector) {
+		ptr->init();
+		ptr->setVertAttribs(1, 2, 5, 3);
+	}
+}
 void Game::init_vertices(Entity& entity, VertexArray& e_VAO, float(&vert)[20], float x, float y, float tex_left, float tex_right, float tex_width, float tex_height)
 {
 	zArrayConverter::convert_coordinates_to_vert_tex_array_reference(vert, x, y, entity.getWidth(), entity.getHeight(), tex_left, tex_right, tex_width, tex_height);
 	e_VAO.init(vert, 20, indices, 6);
 	e_VAO.setVertexAttribPointersf(0, 3, 5, 0);
+	// VAO Layout location
+	// 3 coordinates, so size of 3 per attributes
+	// Total of 5 values (plus the texture) so 5 as stride
+	// 0 Offset to begn vertex coords
 }
 void Game::do_collisions()
 {
