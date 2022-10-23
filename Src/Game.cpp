@@ -14,8 +14,8 @@ Game::Game()
 	model(1.0f), view(1.0f), proj(1.0f),
 	MVP_Scene(1.0f), MVP_Player(1.0f),
 	playerModel(1.0f), playerView(1.0f), staticViewMatrix(1.0f), staticModelMatrix(1.0f),
-	pigView(1.0f), apple(1100, 150.0f, 48.0f, 48.0f), pigTex("Assets/Enemies/AngryPig/Idle/Idle00.png"),
-	a_PlayerTexture("Assets/Virtual Guy/a_Player.png")
+	pigView(1.0f), apple(1100, 150.0f, 72.0f, 72.0f), pigTex("Assets/Enemies/AngryPig/a_Pig.png"),
+	a_PlayerTexture("Assets/Virtual Guy/a_Player.png"), a_AppleTexture("Assets/Items/Fruits/Apple.png")
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -27,9 +27,7 @@ Game::Game()
 	//init_vertices(player, VAOPlayer, playerVert, 0.0f, 0.0f, 0.125f, 0.0f, 0.75f, 0.875f);
 	//init_player_textures();
 	
-	// Apple
-	init_vertices(apple, VAOApple, appleVert, apple.getX(), apple.getY(), 0.25f, 0.25f, 0.5f, 0.5975f);
-	init_fruit_texture(VAOApple, appleFrames, 17, "Assets/Items/Fruits/Apple/apple");
+	
 
 	playerScreenX = player.getX();
 	MVP_Player = playerModel * proj * playerView;
@@ -77,17 +75,20 @@ void Game::run()
 		ImGui::Text("Pig = (%.2f, %.2f)", pig.getX(), pig.getY());
 		ImGui::Text("Pig Collision: %d", Physics::is_collision_player_entity(player, pig));
 		ImGui::Text("Fruit Collisions: %d", Physics::is_collision_player_fruit(player, apple));
-		ImGui::Text("frame: %.2f", a_playerFrame);
+		ImGui::Text("frame: %.2f", a_playerFrames[0]);
 		ImGui::End();	
 		// <---------------- Rendering Code --------------------> \\
 		
 	
 		// ====================== Tile Stuff ================= \\ .
 		shader.setUniform1f("currentTex", 0.0f);
+		shader.setUniform1f("u_xTextureOffset", 0.0f);
+		shader.setUniform1f("u_yTextureOffset", 0.0f);
+		shader.setUniform1f("u_xInverseOffset", 0.0f);
 		staticViewMatrix = glm::translate(staticModelMatrix, glm::vec3(level.get_tile_displacement_x(), 0.0f, 0.0f));
 		shader.setUniformMat4f("u_MVP", MVP_Scene);
 		shader.setUniform1f("facing_right", 1.0f);
-		shader.setUniform1f("player_being_rendered", 0.0f);
+		//shader.setUniform1f("player_being_rendered", 0.0f);
 		if (drawTriangle)
 		{
 			for (int r = 0; r < level.get_rows(); r++)
@@ -114,9 +115,20 @@ void Game::run()
 		}
 		
 		// <================ Enemy Stuff =================> \\
-		
+
+		if (pig.getXVelocity() > 0)
+			shader.setUniform1f("facing_right", 0.0f);
+		else shader.setUniform1f("facing_right", 1.0f);
 		if (!pig.is_enraged())
+		{
 			pig.check_fruit_existance(apple);
+			//0.005208333333, 0.5f, 0.05729f, 0.25f
+			
+			do_pig_walk_animation(14, a_pigFrames[0], 0.0625f, 0.0f, 0.05729 + 0.0052f);
+		}
+		else {
+			do_pig_run_animation(10, a_pigFrames[1], 0.0625f, 0.25f, 5 * (0.05729 + 0.0052f));
+		}
 		//do_pig_animations(pig, pigIdle, pigWalk, pigRunning, pigCurrentFrame);
 
 		shader.setUniform1f("currentTex", 2.0f);
@@ -146,25 +158,22 @@ void Game::run()
 		processInput();
 		shader.setUniformMat4f("u_MVP", MVP_Player);
 		shader.setUniform1f("currentTex", 1.0f);
-		update_texture_frame(a_playerFrame, dt, 100);
-		if (player.getVx() == 0) do_player_idle_animation(10, a_playerFrame, 0.0833, 0.08f);
-		else do_player_running_animation(11, a_playerFrame, 0.0833f, 0.325f);
-
+		if (player.getVx() == 0) do_player_idle_animation(10, a_playerFrames[0], 0.0833, 0.08f);
+		else do_player_running_animation(11, a_playerFrames[1], 0.0833f, 0.325f);
 		renderer.draw(a_VAO[0], shader);
 		
-
 		// <========================= Fruits & Items ======================== > \\.
-		shader.setUniform1f("currentTex", 0.0f);
-		shader.setUniform1f("u_xInverseOffset", 0.0f);
-		shader.setUniform1f("u_xTextureOffset", 0.0f);
-		shader.setUniform1f("u_yTextureOffset", 0.0f);
 
+		shader.setUniform1f("facing_right", 1.0f);
+		//do_fruit_animation(16, a_appleFrame, 0.0635f);
 		if (Physics::is_collision_player_fruit(player, apple)) apple.collect();
 		if (!apple.is_collected())
 		{
 			MVP_Scene = model * proj * staticViewMatrix;
+			shader.setUniform1f("currentTex", 3.0f);
 			shader.setUniformMat4f("u_MVP", MVP_Scene);
-			do_fruit_animatinos(apple, appleFrames, appleCurrentFrame);
+			do_fruit_animation(14, a_appleFrame, 0.588352f);
+			//do_fruit_animatinos(apple, appleFrames, appleCurrentFrame);
 			renderer.draw(VAOApple, shader);
 		}
 		
@@ -187,8 +196,6 @@ void Game::run()
 		currentTileX = level.get_grass_blocks()[0].getX();
 		tileDisplacement = level.get_grass_blocks()[0].getX() - lstTileX;
 		lstTileX = currentTileX;
-		
-		a_playerFrame += 0.005;
 	}
 
 	ImGui_ImplOpenGL3_Shutdown();
@@ -328,6 +335,7 @@ void Game::composeFrame()
 	shader.setUniform1i("u_Texture", 0);
 	shader.setUniform1i("u_PlayerTexture", 1);
 	shader.setUniform1i("u_PigTexture", 2);
+	shader.setUniform1i("u_AppleTexture", 3);
 
 	shader.setUniform1f("facing_right", 1.0f);
 	shader.setUniformMat4f("u_MVP", MVP_Scene);
@@ -339,20 +347,23 @@ void Game::composeFrame()
 	init_vertices(player, a_VAO[0], playerVert, 0.0f, 0.0f, 0.0104f, 0.675f, 0.0625f, 0.275f);
 	a_PlayerTexture.init();
 	a_PlayerTexture.setVertAttribs(1, 2, 5, 3);
-	//init_player_textures(0.034f + 0.0625);
 	
 	// Pig
-	init_vertices(pig, VAOPig, pigVert, 0.1f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	init_vertices(pig, VAOPig, pigVert, 0.1f, 0.0f, 0.0035, 0.5f, 0.05729f, 0.25f);
 	pigTex.init();
 	pigTex.setVertAttribs(1, 2, 5, 3);
 
+	// Apple
+	init_vertices(apple, VAOApple, appleVert, apple.getX(), apple.getY(), 0.00925f, 0.2222f, 0.039f, 0.625f);
+	a_AppleTexture.init();
+	a_AppleTexture.setVertAttribs(1, 2, 5, 3);
+	
+
+
+	// Bind corresponding texture to respective slots
 	a_PlayerTexture.bind(1);
 	pigTex.bind(2);
-	
-	for (int i = 0; i < 10; i++)
-	{
-
-	}
+	a_AppleTexture.bind(3);
 	
 } 
 void Game::init_player_textures(float offset)
@@ -391,18 +402,7 @@ void Game::init_player_textures(float offset)
 	//	ptr->init();
 	//	ptr->setVertAttribs(1, 2, 5, 3);
 	//}
-	for (int i = 0; i < 11; i++)
-	{
-		a_VAO.push_back(VertexArray());
-		if (i % 3 == 0)
-			init_vertices(player, a_VAO[i], playerVert, 0.0f, 0.0f, 0.012f + offset * i, 0.67f, 0.0625f, 0.25f);
-		if (i % 4 == 0)
-			init_vertices(player, a_VAO[i], pVert2, 0.0f, 0.0f, 0.012f + offset * i, 0.67f, 0.0625f, 0.25f);
-		else
-			init_vertices(player, a_VAO[i], pVert3, 0.0f, 0.0f, 0.012f + offset * i, 0.67f, 0.0625f, 0.25f);
-		a_PlayerTexture.setVertAttribs(1, 2, 5, 3);
-		//a_PlayerTexture.setVertAttribs(1, 2, 5, 3);
-	}
+	
 
 }
 void Game::init_enemy_texture(VertexArray& enemy_vao, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkVector, std::vector<std::unique_ptr<Texture>>& runningVector, unsigned int idleFrames, unsigned int walkFrames, unsigned int runningFrames, const std::string& idlePath, const std::string& walkPath, const std::string& runningPath)
@@ -622,6 +622,7 @@ void Game::do_y_collisions()
 
 void Game::do_player_idle_animation(int frames, float& counter, float stride, float xInverseOffset)
 {
+	counter += dt * 1.8;
 	shader.setUniform1f("u_xInverseOffset", xInverseOffset);
 	shader.setUniform1f("u_yTextureOffset", 0.0f);
 	if ((int)counter > frames)
@@ -632,12 +633,43 @@ void Game::do_player_idle_animation(int frames, float& counter, float stride, fl
 }
 void Game::do_player_running_animation(int frames, float& counter, float xTexStride, float yTexStride)
 {
+	counter += dt * 1.8;
+	shader.setUniform1f("u_xInverseOffset", 0.0f);
 	shader.setUniform1f("u_yTextureOffset", yTexStride);
 	if ((int)counter > frames)
 	{
 		counter = 0.0f;
 	}
 	shader.setUniform1f("u_xTextureOffset", (float)((int)counter) * xTexStride);
+}
+
+void Game::do_pig_walk_animation(int frames, float& walkCounter, float textureStride, float yTexStride, float xInverseOffest)
+{
+	walkCounter += dt * 1.8;
+	shader.setUniform1f("u_xInverseOffset", xInverseOffest);
+	shader.setUniform1f("u_yTextureOffset", yTexStride);
+	if ((int)walkCounter > frames)
+		walkCounter = 0.0f;
+	shader.setUniform1f("u_xTextureOffset", (float)((int)walkCounter) * textureStride);
+}
+void Game::do_pig_run_animation(int frames, float& runCounter, float xTexStride, float yTexStride, float xInverseOffset)
+{
+	shader.setUniform1f("u_xInverseOffset", xInverseOffset);
+	runCounter += dt * 1.8;
+	shader.setUniform1f("u_yTextureOffset", yTexStride);
+	if ((int)runCounter > frames)
+		runCounter = 0.0f;
+	shader.setUniform1f("u_xTextureOffset", ((float)((int)runCounter)) * xTexStride);
+}
+
+void Game::do_fruit_animation(int frames, float& counter, float xTextureStride)
+{
+	shader.setUniform1f("u_xInverseOffset", 0.0f);
+	counter += dt*0.6;
+	shader.setUniform1f("u_yTextureOffset", 0.0f);
+	if ((int)counter > frames)
+		counter = -5.0f;
+	shader.setUniform1f("u_xTextureOffset", (float)((int)counter) * xTextureStride);
 }
 
 void Game::do_pig_animations(Pig& p, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkVector, std::vector<std::unique_ptr<Texture>>& runningVector, float& currentFrame)

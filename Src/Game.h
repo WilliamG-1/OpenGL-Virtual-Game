@@ -47,7 +47,8 @@ private:
 	Texture texture2;
 	Texture pigTex;
 	Texture a_PlayerTexture;
-
+	Texture a_AppleTexture;
+	
 	std::vector<VertexArray> a_VAO;
 	std::vector<std::unique_ptr<Texture>> airFrames;
 	std::vector<std::unique_ptr<Texture>> frames;
@@ -76,9 +77,9 @@ private:
 	float currentTime = 0.0f;
 	float lastTime;
 
-	float idleFrame = 0.0f;
-	float runningFrame = 0.0f;
-
+	float a_playerFrames[3] = { 0.0f, 0.0f, 0.0f };
+	float a_pigFrames[3] = { 0.0f, 0.0f, 0.0f };
+	float a_appleFrame = 0.0f;
 	Shader shader;
 	//Shader shader2;
 	Renderer renderer;
@@ -102,8 +103,6 @@ private:
 
 	float tileVert[20];
 	float playerVert[20];
-	float pVert2[20];
-	float pVert3[20];
 	float pigVert[20];
 	float appleVert[20];
 
@@ -138,13 +137,16 @@ private:
 
 	void do_player_idle_animation(int frames, float& ctr, float textureStride, float xInverseOffset);
 	void do_player_running_animation(int frames, float& ctr, float xTexStride, float yTexStride = 0.315f);
+	void do_pig_walk_animation(int frames, float& walkCounter, float textureStride, float yTexStride, float xInverseOffest);
+	void do_pig_run_animation(int frames, float& runCounter, float xTexStride, float yTexStride, float xInverseOffset);
+	void do_fruit_animation(int frames, float& counter, float xTextureStride);
+
 	void do_pig_animations(Pig& p, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkVector, std::vector<std::unique_ptr<Texture>>& runningVector, float& currentFrame);
 	void do_fruit_animatinos(Fruit& fruit, std::vector<std::unique_ptr<Texture>>& frames, float& currentFrame);
 	void update_texture_frame(float& variable, float dt, float max_value);
 	void update_dt();
 	// Temporary stuff lol for testing
 
-	float a_playerFrame = 0.0f;
 
 	float currentX = 0.0f;
 	float lastX = 0.0f;
