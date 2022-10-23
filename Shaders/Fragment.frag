@@ -19,7 +19,7 @@ void main()
     switch(int(currentTex))
     {
     case 0:
-        color = texture(u_Texture, TexCoord);
+        color = texture(u_BackgroundTexture, TexCoord);
         break;
     case 1:
         color = texture(u_PlayerTexture, TexCoord);
@@ -29,6 +29,9 @@ void main()
         break;
     case 3:
         color = texture(u_AppleTexture, TexCoord);
+        break;
+    case 4:
+        color = texture(u_GrassTexture, TexCoord);
         break;
     }
     

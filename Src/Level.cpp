@@ -34,7 +34,7 @@ std::vector<Tile>& Level::get_grass_blocks()
 	return grassBlocks;
 }
 
-std::vector<char> Level::get_board() const
+std::vector<char>& Level::get_board()
 {
 	return board;
 }

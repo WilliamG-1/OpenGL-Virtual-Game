@@ -152,6 +152,7 @@
     <ClCompile Include="Extern\Imgui\imgui_widgets.cpp" />
     <ClCompile Include="Src\Fruit.cpp" />
     <ClCompile Include="Src\GameState.cpp" />
+    <ClCompile Include="Src\Mushroom.cpp" />
     <ClCompile Include="Src\Pig.cpp" />
     <ClCompile Include="Src\Entity.cpp" />
     <ClCompile Include="Src\Physics.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="Src\Camera.h" />
     <ClInclude Include="Src\Fruit.h" />
     <ClInclude Include="Src\GameState.h" />
+    <ClInclude Include="Src\Mushroom.h" />
     <ClInclude Include="Src\Pig.h" />
     <ClInclude Include="Src\Entity.h" />
     <ClInclude Include="Src\Physics.h" />
