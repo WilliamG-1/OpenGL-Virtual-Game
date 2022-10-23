@@ -1,5 +1,6 @@
 #pragma once
 #include "Entity.h"
+#include "Fruit.h"
 
 class Pig : public Entity
 {
@@ -8,6 +9,9 @@ public:
 
 
 	void move(float dt);
+	void stop();
+
+	void check_fruit_existance(Fruit& fruit);
 	void enrage();
 
 	bool is_enraged();

@@ -17,6 +17,16 @@ void Pig::move(float dt)
 		xVel = -xVel;
 }
 
+void Pig::stop()
+{
+	xVel = 0;
+}
+
+void Pig::check_fruit_existance(Fruit& fruit)
+{
+	if (fruit.is_collected())
+		enrage();
+}
 void Pig::enrage()
 {
 	

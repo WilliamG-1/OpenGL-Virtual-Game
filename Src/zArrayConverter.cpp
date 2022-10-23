@@ -83,3 +83,18 @@ void zArrayConverter::convert_coordinates_to_vert_tex_array_reference(float (&ar
 	arr[19] = t_y + t_height;
 
 }
+
+void zArrayConverter::shift_texture_coordinates(float(&arr)[20], float x_shift, float y_shift)
+{
+	arr[3] += x_shift;
+	arr[4] += y_shift;
+
+	arr[8] += x_shift;
+	arr[9] += y_shift;
+
+	arr[13] += x_shift;
+	arr[14] += y_shift;
+
+	arr[18] += x_shift;
+	arr[19] += y_shift;
+}

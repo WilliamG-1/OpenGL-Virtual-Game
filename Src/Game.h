@@ -12,7 +12,7 @@
 #include "Tile.h"
 #include "Pig.h"
 #include "Physics.h"
-
+#include "Fruit.h"
 enum class ArrayType {
 	VERTEX = 0, ELEMENT
 };
@@ -30,33 +30,45 @@ private:
 	float screenWidth = 1024.0f;
 	float screenHeight = 768.0f;
 	float moveSpeed = 40.0f;
+	float currentTexture = 0.0f;
 	Window window;
-	Arrays wrapper;
 
-	glm::vec2 playerStartingCoords = { 125.0f, 500.0f };
+	glm::vec2 playerStartingCoords = { 1.0f, 500.0f };
 	Player player;
 	Player hitbox;
 	
 
 	VertexArray VAO;
 	VertexArray VAOPlayer;
-	VertexArray VAOPig;
+	
 	Level level;
 	Tile backgroundTile;
 	Texture texture;
 	Texture texture2;
-	
+	Texture pigTex;
+	Texture a_PlayerTexture;
+
+	std::vector<VertexArray> a_VAO;
 	std::vector<std::unique_ptr<Texture>> airFrames;
 	std::vector<std::unique_ptr<Texture>> frames;
 	std::vector<std::unique_ptr<Texture>> runningFrames;
 	// ------------ Enemies ----------- \\
 	
+	VertexArray VAOPig;
 	glm::vec2 pigCoords = { 750.0f, 64.0f };
 	Pig pig;
 	std::vector<std::unique_ptr<Texture>> pigIdle;
 	std::vector<std::unique_ptr<Texture>> pigWalk;
 	std::vector<std::unique_ptr<Texture>> pigRunning;
 	float pigCurrentFrame = 0.0f;
+
+	// -------------- Fruits ------------- \\ 
+
+	VertexArray VAOApple;
+	glm::vec2 fruitCoords = { 600.0f, 85.0f };
+	Fruit apple;
+	std::vector<std::unique_ptr<Texture>> appleFrames;
+	float appleCurrentFrame;
 
 	glm::mat4 pigView;
 	
@@ -83,13 +95,17 @@ private:
 	bool updatePastX = true;
 	bool updatePastY = true;
 	bool facing_right = true;
+	float apply_matrix_transform = 1.0f;
 
 	float leftBound = (screenWidth / 2) - (screenWidth /2 ) * 0.1; // Left threshold for screen to begin scrolling
 	float rightBound = (screenWidth / 2) + (screenWidth / 2) * 0.1;// Right threshold
 
 	float tileVert[20];
 	float playerVert[20];
+	float pVert2[20];
+	float pVert3[20];
 	float pigVert[20];
+	float appleVert[20];
 
 	void composeFrame();
 	bool gameRunning = true;
@@ -106,24 +122,38 @@ private:
 	glm::mat4 playerModel;
 	glm::mat4 playerView;
 
+	glm::mat4 staticViewMatrix;
+	glm::mat4 staticModelMatrix;
 	std::vector<char> board;
 
-	void init_player_textures();
+	void init_player_textures(float offset);
 	void init_enemy_texture(VertexArray& enemy_vao, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkingVector, std::vector<std::unique_ptr<Texture>>& runningVector, unsigned int idleFrames, unsigned int walkingFrames, unsigned int runningFrames, const std::string& idlePath, const std::string& walkPath, const std::string& runningPath);
-	void init_vertices(Entity& entity, VertexArray& e_VAO, float (&vert)[20],float x, float y, float tex_left, float tex_right, float tex_width, float tex_height);
+	void init_fruit_texture(VertexArray& fruit_vao, std::vector<std::unique_ptr<Texture>>& fruitVector, unsigned int spriteCount, const std::string& path);
+	void init_vertices(Entity& e, VertexArray& e_VAO, float (&vert)[20],float x, float y, float texture_x, float texture_y, float tex_right, float tex_top);
+	void init_vertices(Fruit& f, VertexArray& e_VAO, float(&vert)[20], float x, float y, float texture_x, float texture_y, float tex_right, float tex_top);
+	void buffer_next_frame(VertexArray& vao, Texture& texture, float(&vert)[20], float space = 11 / 384);
 	void do_player_entity_collisions();
 	void do_x_collisions();
 	void do_y_collisions();
-	void do_pig_animations(Pig& p, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkVector, std::vector<std::unique_ptr<Texture>>& runningVector, float& currentFrame);
 
+	void do_player_idle_animation(int frames, float& ctr, float textureStride, float xInverseOffset);
+	void do_player_running_animation(int frames, float& ctr, float xTexStride, float yTexStride = 0.315f);
+	void do_pig_animations(Pig& p, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkVector, std::vector<std::unique_ptr<Texture>>& runningVector, float& currentFrame);
+	void do_fruit_animatinos(Fruit& fruit, std::vector<std::unique_ptr<Texture>>& frames, float& currentFrame);
 	void update_texture_frame(float& variable, float dt, float max_value);
 	void update_dt();
 	// Temporary stuff lol for testing
+
+	float a_playerFrame = 0.0f;
+
 	float currentX = 0.0f;
 	float lastX = 0.0f;
 	float displacement = currentX - lastX;
 	float currentTileX = 0.0f;
 	float tileDisplacement = 0.0f;
 	float lstTileX = 0.0f;
+
+	bool blending = true;
+	bool pressed = false;
 };
 

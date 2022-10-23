@@ -8,7 +8,6 @@ Texture::Texture(const std::string& texFilePath)
 	width(0), height(0), nrChannels(0),
 	data(nullptr)
 {
-	
 	glGenTextures(1, &texID);
 	stbi_set_flip_vertically_on_load(1);
 	std::cout << filePath << std::endl;
@@ -42,7 +41,7 @@ void Texture::init()
 
 void Texture::setVertAttribs(unsigned int layoutLocation, int count, unsigned int stride, unsigned int offset)
 {
-	bind();
+
 	glVertexAttribPointer(layoutLocation, count, GL_FLOAT, GL_FALSE, stride * sizeof(float), (void*)(offset * sizeof(float)));
 	glEnableVertexAttribArray(layoutLocation);
 }

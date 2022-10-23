@@ -11,6 +11,7 @@ public:
 	void scroll(glm::mat4& viewMatrix);
 	std::vector<char> get_board() const;
 	std::vector<Tile>& get_grass_blocks();
+	void init_level_layout(const std::vector<char>& layout) { board = layout; }
 
 	int get_rows();
 	int get_columns();
@@ -37,6 +38,7 @@ private:
 			'-', '-', '-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 11
 			'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', // 12
 	};
+	
 	
 	float dx = 0.0f;
 };
