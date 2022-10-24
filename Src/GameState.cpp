@@ -45,8 +45,11 @@ void GameState::load_level_1()
 {
 	c_level.init_level_layout(level1);
 
+	v_Apples.push_back(Fruit(1212.0f, 450, 72.0f, 72.0f));
 	v_Pigs.push_back(Pig(750.0f, 64.0f, 96.0f, 80.0f));
-	v_Apples.push_back(Fruit(1212.0f, 70.0f, 72.0f, 72.0f));
+	v_Pigs.push_back(Pig(954.0f, 320.0f, 96.0f, 80.0f, 150.0f));
+	v_Pigs.push_back(Pig(300.0f, 450.0f, 96.0f, 80.0f, 800.0f));
+	
 
 	// Load Background
 	init_vertices(box, VAOBackground, backgroundVert, 0.0f, 704.0f, 0.0f, 0.0f, 1.0f, 1.0f);
@@ -73,6 +76,12 @@ void GameState::load_level_1()
 	appleTexture.init();
 	appleTexture.setVertAttribs(1, 2, 5, 3);
 
+	
+	backgroundTexture.bind();
+	playerTexture.bind(1);
+	pigTexture.bind(2);
+	appleTexture.bind(3);
+	grassTexture.bind(4);	
 }
 
 

@@ -6,40 +6,28 @@
 Game::Game()
 	:
 	player(playerStartingCoords.x, playerStartingCoords.y, 64.0f, 64.0f), box(0.0f, 0.0f, 64.0f, 64.0f),
-	pig(pigCoords.x, pigCoords.y, 96.0f, 80.0f),
 	window(screenWidth, screenHeight, "OpenGl Game"),
-	backgroundTexture("Assets/Background/Pink.png"),
-	grassTexture("Assets/Tiles/GrassTile.png"),
 	model(1.0f), view(1.0f), proj(1.0f),
 	MVP_Scene(1.0f), MVP_Player(1.0f),
 	playerModel(1.0f), playerView(1.0f), staticViewMatrix(1.0f), staticModelMatrix(1.0f),
-	pigView(1.0f), apple(1212, 150.0f, 72.0f, 72.0f), pigTex("Assets/Enemies/AngryPig/a_Pig.png"),
-	a_PlayerTexture("Assets/Virtual Guy/a_Player.png"), a_AppleTexture("Assets/Items/Fruits/Apple.png")
+	pigView(1.0f)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
 
-	playerScreenX = player.getX();
-	MVP_Player = playerModel * proj * playerView;
-	playerView = glm::translate(glm::mat4(1.0f), glm::vec3(playerScreenX, playerScreenY, 0.0f));
-	
-	pigView = glm::translate(glm::mat4(1.0f), glm::vec3(pig.getX(), pig.getY(), 0.0f));
-
-	proj = glm::ortho(0.0f, screenWidth, 0.0f, screenHeight, -1.0f, 1.0f);
-	view = glm::translate(model, glm::vec3(leftRightMove, 0.0f, 0.0f));
-	
-	MVP_Scene = model * proj * view;
-	MVP_Player = playerModel * proj * playerView;
-	
-	playerMiddle = (playerScreenX + playerScreenX + player.getWidth()) / 2;
-	
 }
 
 void Game::run()
 {
 	
 	composeFrame();
+	GameState level1;
+	level1.set_game_state(1);
+	level1.load_state();
+	player = level1.get_current_player();
+	level1.get_current_level().init_grass_tiles(768.0f);
+	board = level1.get_current_level().get_board();
+
 
 	while (gameRunning)
 	{
@@ -51,36 +39,38 @@ void Game::run()
 		// Clear Screen
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
 		
 		// ========================= ImGui ==============================
 		ImGui::Begin("Window");
 		ImGui::Text("Player Coordinates: (%.2f., %.2f)", player.getX(), player.getY());
 		ImGui::Text("Player Velocity: (%.2f, %.2f)", player.getVx(), player.getVy());
-		ImGui::Text("Tile: (%.2f, %.2f)", level.get_grass_blocks()[0].getX(), level.get_grass_blocks()[0].getY());
-		ImGui::Text("Tile Displacement: %.2f", level.get_tile_displacement_x());
+		//ImGui::Text("Tile: (%.2f, %.2f)", level1.get_grass_blocks()[0].getX(), level1.get_grass_blocks()[0].getY());
+		ImGui::Text("Tile Displacement: %.2f", level_displacement);
 		ImGui::Text("Player is moving: %d$", player.is_moving());
 		ImGui::Text("Player Screen Coords: (%.2f, %.2f)", playerScreenX, playerScreenY);
 		ImGui::Text("Bounds: (%.2f, %.2f)", leftBound, rightBound);
 		ImGui::Text("pCenter = %.2f", playerMiddle);
-		ImGui::Text("Pig = (%.2f, %.2f)", pig.getX(), pig.getY());
-		ImGui::Text("Pig Collision: %d", Physics::is_collision_player_entity(player, pig));
-		ImGui::Text("Fruit Collisions: %d", Physics::is_collision_player_fruit(player, apple));
 		ImGui::Text("frame: %.2f", a_playerFrames[0]);
 		ImGui::End();	
 
 		// <=========================== Rendering Code ==========================> \\
 
-		update_tiles(level);		
-		update_pig(pig);			
-		update_player();
-		update_fruit(apple);
+		update_tiles(level1.get_current_level(), level1.get_background_vao(), level1.get_grass_vao());
+
+		for (auto& pig : level1.get_current_pigs())
+			update_pig(pig, level1.get_pig_vao(), level1.get_current_apples()[0], pig.get_walk_frame(), pig.get_run_frame());
+
+		update_player(level1.get_player_vao(), level1.get_current_level());
+		//update_fruit(level1.get_current_apples()[0], level1.get_apple_vao(), level1.get_current_apples()[0].get_frame());
+		for (auto& apple : level1.get_current_apples())
+			update_fruit(apple, level1.get_apple_vao(), apple.get_frame());
 		
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwSwapBuffers(window.getWindow());
 		glfwPollEvents();
 		update_dt();
+		level_displacement = level1.get_current_level().get_tile_displacement_x();
 	}
 
 	ImGui_ImplOpenGL3_Shutdown();
@@ -89,8 +79,7 @@ void Game::run()
 
 	glfwTerminate();
 }
-
-void Game::processInput()
+void Game::processInput(Level& level)
 {
 
 	if (glfwGetKey(window.getWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -107,7 +96,7 @@ void Game::processInput()
 		player.set_moving_left_state(true);
 		if (player.can_move_left())
 		{
-			if (playerMiddle < leftBound && level.get_tile_displacement_x() <= 0)
+			if (playerMiddle < leftBound && level_displacement <= 0)
 			{
 				player.setVx(-moveSpeed);
 				level.scroll(moveSpeed, dt);
@@ -129,7 +118,7 @@ void Game::processInput()
 		player.set_moving_right_state(true);
 		if (player.can_move_right())
 		{
-			if (playerMiddle > rightBound && level.get_tile_displacement_x() >= -256)
+			if (playerMiddle > rightBound && level_displacement >= -256)
 			{
 				player.setVx(moveSpeed);
 				level.scroll(-moveSpeed, dt);
@@ -167,28 +156,11 @@ void Game::processInput()
 	}
 	if (facing_right) shader.setUniform1f("facing_right", 1.0f);
 	else shader.setUniform1f("facing_right", 0.0f);
-	if (player.is_jumping()) //airFrames[0]->bind();
 
 
 	// Blending
-	if (glfwGetKey(window.getWindow(), GLFW_KEY_B) == GLFW_PRESS && !pressed)
-	{
-		pressed = true;
-		if (blending)
-		{
-			glDisable(GL_BLEND);
-			blending = false;
-		}
-		else {
-			glEnable(GL_BLEND);
-			blending = true;
-		}
-	}
-	else if (glfwGetKey(window.getWindow(), GLFW_KEY_B) == GLFW_RELEASE) {
-		pressed = false;
-	}
 
-	
+
 }  
 void Game::composeFrame()
 {
@@ -205,7 +177,7 @@ void Game::composeFrame()
 	// Finally, use our shader program
 	shader.use();
 	
-	MVP_Scene = model * proj * view;
+	
 	// <-------------------- Uniform Stuff ------------------------> \\
 	
 	shader.setUniform1i("u_BackgroundTexture", 0);
@@ -216,71 +188,45 @@ void Game::composeFrame()
 
 
 	shader.setUniform1f("facing_right", 1.0f);
+
+
+	playerScreenX = player.getX();
+	MVP_Player = playerModel * proj * playerView;
+	playerView = glm::translate(glm::mat4(1.0f), glm::vec3(playerScreenX, playerScreenY, 0.0f));
+	playerMiddle = (playerScreenX + playerScreenX + player.getWidth()) / 2;
+
+	proj = glm::ortho(0.0f, screenWidth, 0.0f, screenHeight, -1.0f, 1.0f);
+	view = glm::translate(model, glm::vec3(leftRightMove, 0.0f, 0.0f));
+	MVP_Scene = model * proj * view;
+	MVP_Player = playerModel * proj * playerView;
 	shader.setUniformMat4f("u_MVP", MVP_Scene);
-	level.init_grass_tiles(768.0f);
-	board = level.get_board();
-
-	// Background
-	init_vertices(box, VAOBackground, backgroundVert, 0.0f, 704.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-	backgroundTexture.init();
-	backgroundTexture.setVertAttribs(1, 2, 5, 3);
-
-	// Grass Tiles
-	init_vertices(box, VAOGrassBlock, grassVert, 0.0f, 704.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-	grassTexture.init();
-	grassTexture.setVertAttribs(1, 2, 5, 3);
-
-	// Player
-	a_VAO.push_back(VertexArray());
-	init_vertices(player, a_VAO[0], playerVert, 0.0f, 0.0f, 0.0104f, 0.67f, 0.0625f, 0.28f);
-	a_PlayerTexture.init();
-	a_PlayerTexture.setVertAttribs(1, 2, 5, 3);
-	
-	// Pig
-	init_vertices(pig, VAOPig, pigVert, 0.1f, 0.0f, 0.0035, 0.5f, 0.05729f, 0.25f);
-	pigTex.init();
-	pigTex.setVertAttribs(1, 2, 5, 3);
-
-	// Apple
-	init_vertices(apple, VAOApple, appleVert, apple.getX(), apple.getY(), 0.00925f, 0.2222f, 0.039f, 0.625f);
-	a_AppleTexture.init();
-	a_AppleTexture.setVertAttribs(1, 2, 5, 3);
-	
-
-
-	// Bind corresponding texture to respective slots
-	backgroundTexture.bind();
-	a_PlayerTexture.bind(1);
-	pigTex.bind(2);
-	a_AppleTexture.bind(3);
-	grassTexture.bind(4);	
 } 
 
-void Game::update_player()
+void Game::update_player(VertexArray& player_vao, Level& level)
 {
 	playerView = glm::translate(playerModel, glm::vec3(playerScreenX, player.getY(), 0.0f));
 
 	player.moveX(dt);
-	do_x_collisions();
+	do_x_collisions(level);
 	player.moveY(dt);
-	do_y_collisions();
+	do_y_collisions(level);
 	playerMiddle = (playerScreenX + playerScreenX + player.getWidth()) / 2;
 
 	MVP_Player = playerModel * proj * playerView;
 
-	processInput();
+	processInput(level);
 	shader.setUniformMat4f("u_MVP", MVP_Player);
 	shader.setUniform1f("currentTex", 1.0f);
 	if (player.getVx() == 0) do_player_idle_animation(10, a_playerFrames[0], 0.0833, 0.08f);
 	else do_player_running_animation(11, a_playerFrames[1], 0.0833f, 0.325f);
-	renderer.draw(a_VAO[0], shader);
+	renderer.draw(player_vao, shader);
 
 }
 void Game::do_player_entity_collisions()
 {
 	// To do
 }
-void Game::do_x_collisions()
+void Game::do_x_collisions(Level& level)
 {
 	if (player.getX() <= 0.05f && player.is_moving_left())
 	{
@@ -309,7 +255,7 @@ void Game::do_x_collisions()
 			//updatePastX = false;
 			//player.set_can_move_left(false);
 			player.setX(player.getX() + (tile.getX() + tile.getWidth() - player.getX()));
-			playerScreenX = playerScreenX + (tile.getX() + level.get_tile_displacement_x() + tile.getWidth() - playerScreenX);
+			playerScreenX = playerScreenX + (tile.getX() + level_displacement + tile.getWidth() - playerScreenX);
 			//player.setX(pastX);
 			//playerScreenX = pastX;
 		}
@@ -317,13 +263,13 @@ void Game::do_x_collisions()
 		if (Physics::is_collision_player_tile(player, tile) && player.is_moving_right())
 		{
 			player.setX(player.getX() - (player.getX() + player.getWidth() - tile.getX()));
-			playerScreenX = playerScreenX - (playerScreenX + player.getWidth() - tile.getX() - level.get_tile_displacement_x());
+			playerScreenX = playerScreenX - (playerScreenX + player.getWidth() - tile.getX() - level_displacement);
 			//playerScreenX = 
 		}
 	}
 	player.applyGravity(dt);
 }
-void Game::do_y_collisions()
+void Game::do_y_collisions(Level& level)
 {
 	for (auto& tile : level.get_grass_blocks())
 	{
@@ -379,7 +325,7 @@ void Game::do_player_running_animation(int frames, float& counter, float xTexStr
 	shader.setUniform1f("u_xTextureOffset", (float)((int)counter) * xTexStride);
 }
 
-void Game::update_tiles(Level& level)
+void Game::update_tiles(Level& level, VertexArray& background_vao, VertexArray& grass_vao)
 {
 	shader.setUniform1f("currentTex", 0.0f);
 	shader.setUniform1f("u_xTextureOffset", 0.0f);
@@ -392,47 +338,47 @@ void Game::update_tiles(Level& level)
 	{
 		for (int c = 0; c < level.get_columns(); c++)
 		{
-			view = glm::translate(model, glm::vec3(level.get_tile_displacement_x() + (64 * c), -(64 * r), 0.0f));
+			view = glm::translate(model, glm::vec3(level_displacement + (64 * c), -(64 * r), 0.0f));
 			MVP_Scene = model * proj * view;
 			shader.setUniformMat4f("u_MVP", MVP_Scene);
 
 			if (board[c + (r * level.get_columns())] == level.get_grass_tile())
 			{
 				shader.setUniform1f("currentTex", 4.0f);
-				renderer.draw(VAOGrassBlock, shader);
+				renderer.draw(grass_vao, shader);
 			}
 
 			if (board[c + (r * level.get_columns())] == level.get_background_tile())
 			{
 				shader.setUniform1f("currentTex", 0.0f);
-				renderer.draw(VAOBackground, shader);
+				renderer.draw(background_vao, shader);
 			}
 		}
 	}
 }
 
-void Game::update_pig(Pig& pig)
+void Game::update_pig(Pig& pig, VertexArray& pig_vao, Fruit& fruit, float& walk_frame, float& run_frame)
 {
 	if (pig.getXVelocity() > 0)
 		shader.setUniform1f("facing_right", 0.0f);
 	else shader.setUniform1f("facing_right", 1.0f);
+	shader.setUniform1f("currentTex", 2.0f);
 	if (!pig.is_enraged())
 	{
-		pig.check_fruit_existance(apple);
+		pig.check_fruit_existance(fruit);
 		//0.005208333333, 0.5f, 0.05729f, 0.25f
 
-		do_pig_walk_animation(14, a_pigFrames[0], 0.0625f, 0.0f, 0.05729 + 0.0052f);
+		do_pig_walk_animation(14, pig.get_walk_frame(), 0.0625f, 0.0f, 0.05729 + 0.0052f);
 	}
 	else {
-		do_pig_run_animation(10, a_pigFrames[1], 0.0625f, 0.25f, 5 * (0.05729 + 0.0052f));
+		do_pig_run_animation(10, pig.get_run_frame(), 0.0625f, 0.25f, 5 * (0.05729 + 0.0052f));
 	}
 
-	shader.setUniform1f("currentTex", 2.0f);
 	pig.move(dt);
-	pigView = glm::translate(model, glm::vec3(pig.getX() + level.get_tile_displacement_x(), pig.getY(), 0.0f));
+	pigView = glm::translate(model, glm::vec3(pig.getX() + level_displacement, pig.getY(), 0.0f));
 	MVP_Scene = model * proj * pigView;
 	shader.setUniformMat4f("u_MVP", MVP_Scene);
-	renderer.draw(VAOPig, shader);
+	renderer.draw(pig_vao, shader);
 
 }
 void Game::do_pig_walk_animation(int frames, float& walkCounter, float textureStride, float yTexStride, float xInverseOffest)
@@ -454,20 +400,22 @@ void Game::do_pig_run_animation(int frames, float& runCounter, float xTexStride,
 	shader.setUniform1f("u_xTextureOffset", ((float)((int)runCounter)) * xTexStride);
 }
 
-void Game::update_fruit(Fruit& fruit)
+void Game::update_fruit(Fruit& fruit, VertexArray& fruit_vao, float& frame)
 {
-	staticViewMatrix = glm::translate(staticModelMatrix, glm::vec3(level.get_tile_displacement_x(), 0.0f, 0.0f));
-	shader.setUniform1f("facing_right", 1.0f);
-	//do_fruit_animation(16, a_appleFrame, 0.0635f);
-	if (Physics::is_collision_player_fruit(player, fruit)) fruit.collect();
 	if (!fruit.is_collected())
 	{
-		MVP_Scene = model * proj * staticViewMatrix;
-		shader.setUniform1f("currentTex", 3.0f);
-		shader.setUniformMat4f("u_MVP", MVP_Scene);
-		do_fruit_animation(14, a_appleFrame, 0.588352f);
-		//do_fruit_animatinos(apple, appleFrames, appleCurrentFrame);
-		renderer.draw(VAOApple, shader);
+		staticViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(level_displacement, 0.0f, 0.0f));
+		shader.setUniform1f("facing_right", 1.0f);
+		if (Physics::is_collision_player_fruit(player, fruit))
+			fruit.collect();
+		if (!fruit.is_collected())
+		{
+			MVP_Scene = glm::mat4(1.0f) * proj * (staticViewMatrix);
+			shader.setUniform1f("currentTex", 3.0f);
+			shader.setUniformMat4f("u_MVP", MVP_Scene);
+			do_fruit_animation(14, frame, 0.588352f);
+			renderer.draw(fruit_vao, shader);
+		}
 	}
 
 }
@@ -480,7 +428,6 @@ void Game::do_fruit_animation(int frames, float& counter, float xTextureStride)
 		counter = -5.0f;
 	shader.setUniform1f("u_xTextureOffset", (float)((int)counter) * xTextureStride);
 }
-
 
 
 // Old Stuff

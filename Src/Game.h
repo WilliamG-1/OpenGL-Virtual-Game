@@ -24,9 +24,8 @@ public:
 	Game();
 	~Game();
 	void run();
-	void processInput();
+	void processInput(Level& level);
 
-	
 private:	
 	float screenWidth = 1024.0f;
 	float screenHeight = 768.0f;
@@ -37,43 +36,8 @@ private:
 	glm::vec2 playerStartingCoords = { 1.0f, 500.0f };
 	Player player;
 	Entity box;
-	
 
-	VertexArray VAOBackground;
-	VertexArray VAOGrassBlock;
-	VertexArray VAOPlayer;
-	
-	Level level;
-	Tile backgroundTile;
-	Texture backgroundTexture;
-	Texture grassTexture;
-	Texture pigTex;
-	Texture a_PlayerTexture;
-	Texture a_AppleTexture;
-	
-	std::vector<VertexArray> a_VAO;
-	std::vector<std::unique_ptr<Texture>> airFrames;
-	std::vector<std::unique_ptr<Texture>> frames;
-	std::vector<std::unique_ptr<Texture>> runningFrames;
-	// ------------ Enemies ----------- \\
-	
-	VertexArray VAOPig;
-	glm::vec2 pigCoords = { 750.0f, 64.0f };
-	Pig pig;
-	std::vector<std::unique_ptr<Texture>> pigIdle;
-	std::vector<std::unique_ptr<Texture>> pigWalk;
-	std::vector<std::unique_ptr<Texture>> pigRunning;
 	float pigCurrentFrame = 0.0f;
-
-	// -------------- Fruits ------------- \\ 
-
-	VertexArray VAOApple;
-	glm::vec2 fruitCoords = { 600.0f, 85.0f };
-	Fruit apple;
-	std::vector<std::unique_ptr<Texture>> appleFrames;
-	float appleCurrentFrame;
-
-	glm::mat4 pigView;
 	
 	float dt;
 	float currentTime = 0.0f;
@@ -82,8 +46,8 @@ private:
 	float a_playerFrames[3] = { 0.0f, 0.0f, 0.0f };
 	float a_pigFrames[3] = { 0.0f, 0.0f, 0.0f };
 	float a_appleFrame = 0.0f;
+
 	Shader shader;
-	//Shader shader2;
 	Renderer renderer;
 
 	unsigned int indices[6] = {
@@ -93,25 +57,15 @@ private:
 	float playerScreenX;
 	float playerScreenY;
 	float playerMiddle;
-	float pastX;
-	float pastY;
-	bool updatePastX = true;
-	bool updatePastY = true;
+
 	bool facing_right = true;
-	float apply_matrix_transform = 1.0f;
 
 	float leftBound = (screenWidth / 2) - (screenWidth /2 ) * 0.1; // Left threshold for screen to begin scrolling
 	float rightBound = (screenWidth / 2) + (screenWidth / 2) * 0.1;// Right threshold
+	float level_displacement = 0.0f;
 
-	float backgroundVert[20];
-	float grassVert[20];
-	float playerVert[20];
-	float pigVert[20];
-	float appleVert[20];
-
-	void composeFrame();
+	
 	bool gameRunning = true;
-	bool drawTriangle = true;
 
 	float leftRightMove = 0.0f;
 
@@ -124,10 +78,13 @@ private:
 	glm::mat4 playerModel;
 	glm::mat4 playerView;
 
+	glm::mat4 pigView;
 	glm::mat4 staticViewMatrix;
 	glm::mat4 staticModelMatrix;
 	std::vector<char> board;
 
+
+	void composeFrame();
 	void init_player_textures(float offset);
 	void init_enemy_texture(VertexArray& enemy_vao, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkingVector, std::vector<std::unique_ptr<Texture>>& runningVector, unsigned int idleFrames, unsigned int walkingFrames, unsigned int runningFrames, const std::string& idlePath, const std::string& walkPath, const std::string& runningPath);
 	void init_fruit_texture(VertexArray& fruit_vao, std::vector<std::unique_ptr<Texture>>& fruitVector, unsigned int spriteCount, const std::string& path);
@@ -135,21 +92,21 @@ private:
 	void init_vertices(Fruit& f, VertexArray& e_VAO, float(&vert)[20], float x, float y, float texture_x, float texture_y, float tex_right, float tex_top);
 	void buffer_next_frame(VertexArray& vao, Texture& texture, float(&vert)[20], float space = 11 / 384);
 
-	void update_player();
+	void update_player(VertexArray& player_vao, Level& level);
 	void do_player_entity_collisions();
-	void do_x_collisions();
-	void do_y_collisions();
+	void do_x_collisions(Level& level);
+	void do_y_collisions(Level& level);
 	void do_player_idle_animation(int frames, float& ctr, float textureStride, float xInverseOffset);
 	void do_player_running_animation(int frames, float& ctr, float xTexStride, float yTexStride = 0.315f);
 	void do_pig_walk_animation(int frames, float& walkCounter, float textureStride, float yTexStride, float xInverseOffest);
 	void do_pig_run_animation(int frames, float& runCounter, float xTexStride, float yTexStride, float xInverseOffset);
 
-	void update_fruit(Fruit& fruit);
+	void update_fruit(Fruit& fruit, VertexArray& vao, float& frame);
 	void do_fruit_animation(int frames, float& counter, float xTextureStride);
 
-	void update_tiles(Level& level);
+	void update_tiles(Level& level, VertexArray& background_vao, VertexArray& grass_vao);
 
-	void update_pig(Pig& pig);
+	void update_pig(Pig& pig, VertexArray& pig_vao, Fruit& fruit, float& walk_frame, float& run_frame);
 	void do_pig_animations(Pig& p, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkVector, std::vector<std::unique_ptr<Texture>>& runningVector, float& currentFrame);
 	void do_fruit_animatinos(Fruit& fruit, std::vector<std::unique_ptr<Texture>>& frames, float& currentFrame);
 

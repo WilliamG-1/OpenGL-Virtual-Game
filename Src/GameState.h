@@ -23,10 +23,19 @@ public:
 	void set_game_state(unsigned int state);
 	void load_state();
 	void draw(Renderer& renderer, Shader& shader);
+
+	Level& get_current_level() { return c_level; }
 	std::vector<Tile>& get_current_tiles() { return v_GrassTiles; }
 	std::vector<Pig>& get_current_pigs() { return v_Pigs; }
 	std::vector<Fruit>& get_current_apples() { return v_Apples; }
+
 	Player& get_current_player() { return player; }
+
+	VertexArray& get_player_vao() { return VAOPlayer; }
+	VertexArray& get_background_vao() { return VAOBackground; }
+	VertexArray& get_grass_vao() { return VAOGrass; }
+	VertexArray& get_pig_vao() { return VAOPig; }
+	VertexArray& get_apple_vao() { return VAOApple; }
 
 	unsigned int get_current_state() const { return current_state; }
 private:
@@ -40,8 +49,9 @@ private:
 	Entity box;
 	Tile backgroundTile;
 	std::vector<Tile> v_GrassTiles;
-	std::vector<Pig> v_Pigs;
 	std::vector<Fruit> v_Apples;
+	std::vector<Pig> v_Pigs;
+	
 	
 	VertexArray VAOPlayer;
 	VertexArray VAOBackground;
@@ -80,10 +90,10 @@ private:
 			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 5
 			'-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 6
 			'-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 7
-			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 8
-			'-', 'X', '-', '_', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 9
-			'-', '-', 'X', '_', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 10
-			'-', '-', '-', '_', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 11
+			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', 'X', 'X', '-', '-', // 8
+			'-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', // 9
+			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 10
+			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 11
 			'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', // 12
 	};
 	unsigned int indices[6] = { 0, 1, 2,  2, 3, 0 };

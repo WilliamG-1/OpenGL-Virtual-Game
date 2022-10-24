@@ -1,10 +1,11 @@
 #include "Pig.h"
 
-Pig::Pig(float in_x, float in_y, float width, float height)
+Pig::Pig(float in_x, float in_y, float width, float height, float max_displacement)
 	:
 	Entity( in_x, in_y, width, height)
 {
 	xVel = 20.0f;
+	m_maxDisplacement = max_displacement;
 }
 
 void Pig::move(float dt)
@@ -31,7 +32,7 @@ void Pig::enrage()
 {
 	
 	// Double velocity when pig enrages
-	xVel *= 2.5;
+	xVel *= 2.1;
 	enraged = true;
 }
 

@@ -7,5 +7,7 @@ public:
 
 
 private:
-	glm::mat4 
+	glm::mat4 modelProjection;
+	glm::mat4 projection;
+	glm::mat4 view;
 };

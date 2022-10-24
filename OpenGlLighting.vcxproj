@@ -150,6 +150,7 @@
     <ClCompile Include="Extern\Imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="Extern\Imgui\imgui_tables.cpp" />
     <ClCompile Include="Extern\Imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Src\Camera.cpp" />
     <ClCompile Include="Src\Fruit.cpp" />
     <ClCompile Include="Src\GameState.cpp" />
     <ClCompile Include="Src\Mushroom.cpp" />

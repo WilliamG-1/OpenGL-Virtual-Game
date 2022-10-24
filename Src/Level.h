@@ -11,7 +11,7 @@ public:
 	void scroll(glm::mat4& viewMatrix);
 	std::vector<char>& get_board();
 	std::vector<Tile>& get_grass_blocks();
-	void init_level_layout(const std::vector<char>& layout) { board = layout; }
+	void init_level_layout(std::vector<char>& layout) { board = layout; }
 
 	int get_rows();
 	int get_columns();
