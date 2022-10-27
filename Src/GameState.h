@@ -28,6 +28,7 @@ public:
 	std::vector<Tile>& get_current_tiles() { return v_GrassTiles; }
 	std::vector<Pig>& get_current_pigs() { return v_Pigs; }
 	std::vector<Fruit>& get_current_apples() { return v_Apples; }
+	std::vector<Fruit>& get_current_oranges() { return v_Oranges; }
 
 	Player& get_current_player() { return player; }
 
@@ -36,7 +37,7 @@ public:
 	VertexArray& get_grass_vao() { return VAOGrass; }
 	VertexArray& get_pig_vao() { return VAOPig; }
 	VertexArray& get_apple_vao() { return VAOApple; }
-
+	VertexArray& get_orange_vao() { return VAOOrange; }
 	unsigned int get_current_state() const { return current_state; }
 private:
 	Level c_level;
@@ -48,8 +49,10 @@ private:
 	Player player;
 	Entity box;
 	Tile backgroundTile;
+
 	std::vector<Tile> v_GrassTiles;
 	std::vector<Fruit> v_Apples;
+	std::vector<Fruit> v_Oranges;
 	std::vector<Pig> v_Pigs;
 	
 	
@@ -58,18 +61,21 @@ private:
 	VertexArray VAOGrass;
 	VertexArray VAOPig;
 	VertexArray VAOApple;
+	VertexArray VAOOrange;
 
 	Texture playerTexture;
 	Texture backgroundTexture;
 	Texture grassTexture;
 	Texture pigTexture;
 	Texture appleTexture;
+	Texture orangeTexture;
 
 	float playerVert[20];
 	float backgroundVert[20];
 	float grassVert[20];
 	float pigVert[20];
 	float appleVert[20];
+	float orangeVert[20];
 
 	glm::mat4 MVP;
 	glm::mat4 view;

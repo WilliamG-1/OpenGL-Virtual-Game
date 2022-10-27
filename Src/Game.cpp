@@ -57,16 +57,20 @@ void Game::run()
 
 		update_tiles(level1.get_current_level(), level1.get_background_vao(), level1.get_grass_vao());
 
-		for (int i = 0; i < 3; i++)
-		{
-			update_pig(level1.get_current_pigs()[i], level1.get_pig_vao(), level1.get_current_apples()[i], level1.get_current_pigs()[i].get_walk_frame(), level1.get_current_pigs()[i].get_run_frame());
-		}
 		//for (auto& pig : level1.get_current_pigs())
-		//update_pig(pig, level1.get_pig_vao(), level1.get_current_apples()[1], pig.get_walk_frame(), pig.get_run_frame());
+		//{
+		//	update_pig(level1.get_current_pigs()[0], level1.get_pig_vao(), level1.get_current_apples()[i], level1.get_current_pigs()[0].get_walk_frame(), level1.get_current_pigs()[i].get_run_frame());
+		//}
+		for (auto& pig : level1.get_current_pigs())
+			update_pig(pig, level1.get_pig_vao(), level1.get_current_apples()[0], pig.get_walk_frame(), pig.get_run_frame());
 
 		for (auto& apple : level1.get_current_apples())
-			update_fruit(apple, level1.get_apple_vao(), apple.get_frame());
-
+			update_fruit(apple, level1.get_apple_vao(), apple.get_frame(), 3.0f);
+		
+		for (auto& orange : level1.get_current_oranges())
+		{
+			update_fruit(orange, level1.get_orange_vao(), orange.get_frame(), 5.0f);
+		}
 		update_player(level1.get_player_vao(), level1.get_current_level());
 		//update_fruit(level1.get_current_apples()[0], level1.get_apple_vao(), level1.get_current_apples()[0].get_frame());
 		
@@ -190,7 +194,7 @@ void Game::composeFrame()
 	shader.setUniform1i("u_PigTexture", 2);
 	shader.setUniform1i("u_AppleTexture", 3);
 	shader.setUniform1i("u_GrassTexture", 4);
-
+	shader.setUniform1i("u_OrangeTexture", 5);
 
 	shader.setUniform1f("facing_right", 1.0f);
 
@@ -405,8 +409,9 @@ void Game::do_pig_run_animation(int frames, float& runCounter, float xTexStride,
 	shader.setUniform1f("u_xTextureOffset", ((float)((int)runCounter)) * xTexStride);
 }
 
-void Game::update_fruit(Fruit& fruit, VertexArray& fruit_vao, float& frame)
+void Game::update_fruit(Fruit& fruit, VertexArray& fruit_vao, float& frame, float textureSlot)
 {
+	
 	if (!fruit.is_collected())
 	{
 		staticViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(fruit.getX() + level_displacement, fruit.getY(), 0.0f));
@@ -416,7 +421,7 @@ void Game::update_fruit(Fruit& fruit, VertexArray& fruit_vao, float& frame)
 		if (!fruit.is_collected())
 		{
 			MVP_Scene = glm::mat4(1.0f) * proj * (staticViewMatrix);
-			shader.setUniform1f("currentTex", 3.0f);
+			shader.setUniform1f("currentTex", textureSlot);
 			shader.setUniformMat4f("u_MVP", MVP_Scene);
 			do_fruit_animation(14, frame, 0.588352f);
 			renderer.draw(fruit_vao, shader);
@@ -427,7 +432,7 @@ void Game::update_fruit(Fruit& fruit, VertexArray& fruit_vao, float& frame)
 void Game::do_fruit_animation(int frames, float& counter, float xTextureStride)
 {
 	shader.setUniform1f("u_xInverseOffset", 0.0f);
-	counter += dt*0.6;
+	counter += dt * 0.9f;
 	shader.setUniform1f("u_yTextureOffset", 0.0f);
 	if ((int)counter > frames)
 		counter = -5.0f;

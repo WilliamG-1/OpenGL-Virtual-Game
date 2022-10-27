@@ -102,7 +102,7 @@ private:
 	void do_pig_walk_animation(int frames, float& walkCounter, float textureStride, float yTexStride, float xInverseOffest);
 	void do_pig_run_animation(int frames, float& runCounter, float xTexStride, float yTexStride, float xInverseOffset);
 
-	void update_fruit(Fruit& fruit, VertexArray& vao, float& frame);
+	void update_fruit(Fruit& fruit, VertexArray& vao, float& frame, float textureSlot);
 	void do_fruit_animation(int frames, float& counter, float xTextureStride);
 
 	void update_tiles(Level& level, VertexArray& background_vao, VertexArray& grass_vao);

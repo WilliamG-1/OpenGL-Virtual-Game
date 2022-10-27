@@ -8,7 +8,8 @@ GameState::GameState()
 	grassTexture("Assets/Tiles/GrassTile.png"),
 	playerTexture("Assets/Virtual Guy/a_Player.png"),
 	pigTexture("Assets/Enemies/AngryPig/a_Pig.png"),
-	appleTexture("Assets/Items/Fruits/Apple.png")
+	appleTexture("Assets/Items/Fruits/Apple.png"),
+	orangeTexture("Assets/Items/Fruits/Orange.png")
 {
 
 }
@@ -46,12 +47,17 @@ void GameState::load_level_1()
 	c_level.init_level_layout(level1);
 
 	v_Apples.push_back(Fruit(1212.0f, 450, 72.0f, 72.0f));
-	v_Apples.push_back(Fruit(200.0f, 450.0f, 72.0f, 72.0f));
-	v_Apples.push_back(Fruit(500.0f, 64.0f, 72.0f, 72.0f));
-
+	//v_Apples.push_back(Fruit(200.0f, 450.0f, 72.0f, 72.0f));
+	//v_Apples.push_back(Fruit(500.0f, 64.0f, 72.0f, 72.0f));
+	
+	for (int i = 1; i < 20; i++)
+	{
+		v_Oranges.push_back(Fruit(200.0f + 50.0f * i, 64.0f, 44.0f, 44.0f));
+	}
+	for (int i = 1; i < 5; i++) v_Oranges.push_back(Fruit(910.0f + 50.0f * i, 320.0f, 44.0f, 44.0f));
 	v_Pigs.push_back(Pig(750.0f, 64.0f, 96.0f, 80.0f));
-	v_Pigs.push_back(Pig(954.0f, 320.0f, 96.0f, 80.0f, 150.0f));
-	v_Pigs.push_back(Pig(300.0f, 450.0f, 96.0f, 80.0f, 800.0f));
+	//v_Pigs.push_back(Pig(954.0f, 320.0f, 96.0f, 80.0f, 150.0f));
+	//v_Pigs.push_back(Pig(300.0f, 450.0f, 96.0f, 80.0f, 800.0f));
 	
 
 	// Load Background
@@ -75,6 +81,12 @@ void GameState::load_level_1()
 	appleTexture.init();
 	appleTexture.setVertAttribs(1, 2, 5, 3);
 
+
+	// Oranges
+	init_vertices(v_Oranges[0], VAOOrange, orangeVert, 0.0f, 0.0f, 0.00925f, 0.2222f, 0.039f, 0.625f);
+	orangeTexture.init();
+	orangeTexture.setVertAttribs(1, 2, 5, 3);
+
 	// Load Pigs
 	init_vertices(v_Pigs[0], VAOPig, pigVert, 0.1f, 0.0f, 0.0035, 0.5f, 0.05729f, 0.25f);
 	pigTexture.init();
@@ -87,6 +99,7 @@ void GameState::load_level_1()
 	pigTexture.bind(2);
 	appleTexture.bind(3);
 	grassTexture.bind(4);	
+	orangeTexture.bind(5);
 }
 
 
