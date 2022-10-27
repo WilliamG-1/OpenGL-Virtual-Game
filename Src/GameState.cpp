@@ -2,7 +2,7 @@
 
 GameState::GameState()
 	:
-	player(1.0f, 200.0f, 64.0f, 64.0f), 
+	player(1.0f, 200.0f, 60.0f, 60.0f), 
 	box(0.0f, 0.0f, 64.0f, 64.0f),
 	backgroundTexture("Assets/Background/Green.png"),
 	grassTexture("Assets/Tiles/GrassTile.png"),
@@ -46,6 +46,9 @@ void GameState::load_level_1()
 	c_level.init_level_layout(level1);
 
 	v_Apples.push_back(Fruit(1212.0f, 450, 72.0f, 72.0f));
+	v_Apples.push_back(Fruit(200.0f, 450.0f, 72.0f, 72.0f));
+	v_Apples.push_back(Fruit(500.0f, 64.0f, 72.0f, 72.0f));
+
 	v_Pigs.push_back(Pig(750.0f, 64.0f, 96.0f, 80.0f));
 	v_Pigs.push_back(Pig(954.0f, 320.0f, 96.0f, 80.0f, 150.0f));
 	v_Pigs.push_back(Pig(300.0f, 450.0f, 96.0f, 80.0f, 800.0f));
@@ -57,7 +60,7 @@ void GameState::load_level_1()
 	backgroundTexture.setVertAttribs(1, 2, 5, 3);
 
 	// Load Grass Tiles
-	init_vertices(box, VAOGrass, grassVert, 0.0f, 704.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	init_vertices(box, VAOGrass, grassVert, 0.0f, 704.0f, 0.1, 0.0f, .80f, 1.0f);
 	grassTexture.init();
 	grassTexture.setVertAttribs(1, 2, 5, 3);
 
@@ -66,15 +69,17 @@ void GameState::load_level_1()
 	playerTexture.init();
 	playerTexture.setVertAttribs(1, 2, 5, 3);
 
+	// Load Fruits
+	//  init_vertices(v_Apples[0], VAOApple, appleVert, v_Apples[0].getX(), v_Apples[0].getY(), 0.00925f, 0.2222f, 0.039f, 0.625f);
+	init_vertices(v_Apples[0], VAOApple, appleVert, 0.0f, 0.0f, 0.00925f, 0.2222f, 0.039f, 0.625f);
+	appleTexture.init();
+	appleTexture.setVertAttribs(1, 2, 5, 3);
+
 	// Load Pigs
 	init_vertices(v_Pigs[0], VAOPig, pigVert, 0.1f, 0.0f, 0.0035, 0.5f, 0.05729f, 0.25f);
 	pigTexture.init();
 	pigTexture.setVertAttribs(1, 2, 5, 3);
 
-	// Load Fruits
-	init_vertices(v_Apples[0], VAOApple, appleVert, v_Apples[0].getX(), v_Apples[0].getY(), 0.00925f, 0.2222f, 0.039f, 0.625f);
-	appleTexture.init();
-	appleTexture.setVertAttribs(1, 2, 5, 3);
 
 	
 	backgroundTexture.bind();

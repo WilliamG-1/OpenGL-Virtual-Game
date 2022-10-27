@@ -25,5 +25,5 @@ private:
 	float m_maxDisplacement = 400.0f;
 	float m_velocity;
 	float m_initialX = x;
-	bool enraged;
+	bool enraged = false;
 };

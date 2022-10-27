@@ -69,6 +69,7 @@ private:
 
 	float leftRightMove = 0.0f;
 
+	
 	glm::mat4 MVP_Scene;
 	glm::mat4 proj;
 	glm::mat4 model;

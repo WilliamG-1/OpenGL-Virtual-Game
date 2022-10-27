@@ -57,13 +57,18 @@ void Game::run()
 
 		update_tiles(level1.get_current_level(), level1.get_background_vao(), level1.get_grass_vao());
 
-		for (auto& pig : level1.get_current_pigs())
-			update_pig(pig, level1.get_pig_vao(), level1.get_current_apples()[0], pig.get_walk_frame(), pig.get_run_frame());
+		for (int i = 0; i < 3; i++)
+		{
+			update_pig(level1.get_current_pigs()[i], level1.get_pig_vao(), level1.get_current_apples()[i], level1.get_current_pigs()[i].get_walk_frame(), level1.get_current_pigs()[i].get_run_frame());
+		}
+		//for (auto& pig : level1.get_current_pigs())
+		//update_pig(pig, level1.get_pig_vao(), level1.get_current_apples()[1], pig.get_walk_frame(), pig.get_run_frame());
+
+		for (auto& apple : level1.get_current_apples())
+			update_fruit(apple, level1.get_apple_vao(), apple.get_frame());
 
 		update_player(level1.get_player_vao(), level1.get_current_level());
 		//update_fruit(level1.get_current_apples()[0], level1.get_apple_vao(), level1.get_current_apples()[0].get_frame());
-		for (auto& apple : level1.get_current_apples())
-			update_fruit(apple, level1.get_apple_vao(), apple.get_frame());
 		
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -404,7 +409,7 @@ void Game::update_fruit(Fruit& fruit, VertexArray& fruit_vao, float& frame)
 {
 	if (!fruit.is_collected())
 	{
-		staticViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(level_displacement, 0.0f, 0.0f));
+		staticViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(fruit.getX() + level_displacement, fruit.getY(), 0.0f));
 		shader.setUniform1f("facing_right", 1.0f);
 		if (Physics::is_collision_player_fruit(player, fruit))
 			fruit.collect();
