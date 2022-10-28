@@ -16,7 +16,6 @@ public:
 	void setUniform1f(const std::string& uniformName, float value);
 	void setUniform1i(const std::string& uniformName, int value);
 	void setUniformMat4f(const std::string& uniformName, const glm::mat4& matrix);
-
 	GLuint getShaderProgram() const;
 private:
 	enum class ShaderType

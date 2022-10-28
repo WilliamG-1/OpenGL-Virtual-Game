@@ -20,7 +20,7 @@ class Entity
 {
 public:
 	Entity(float in_x, float in_y, float in_width, float in_height);
-	void moveX(int direction, float dt);
+	void moveX(float dt);
 	void moveY(float dt);
 
 	bool is_moving_left() const;
@@ -38,12 +38,15 @@ public:
 	float getY() const;
 	float getWidth() const;
 	float getHeight() const;
-
+	float getXVelocity() const;
+	float getYVelocity() const;
 	void setX(float x);
 	void setY(float y);
 
 	void set_moving_right_state(bool state);
 	void set_moving_left_state(bool state);
+	void set_moving_up_state(bool state);
+	void set_falling_state(bool state);
 
 	void set_can_move_left(bool state);
 	void set_can_move_right(bool state);

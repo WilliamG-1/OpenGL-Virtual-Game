@@ -4,6 +4,8 @@ Tile::Tile()
 {
 	x = 0.0f;
 	y = 0.0f;
+	starting_x = x;
+	starting_y = y;
 	width = 64.0f;
 	height = 64.0f;
 }
@@ -12,28 +14,40 @@ Tile::Tile(float in_x, float in_y, float in_width, float in_height)
 {
 	x = in_x;
 	y = in_y;
+	starting_x = x;
+	starting_y = y;
 	width = in_width;
 	height = in_height;
 }
 
 float Tile::getX() const
 {
-	return x;
+	return this->x;
 }
 
 float Tile::getY() const
 {
-	return y;
+	return this->y;
+}
+
+float Tile::get_starting_x() const
+{
+	return this->starting_x;
+}
+
+float  Tile::get_starting_y() const
+{
+	return this->starting_y;
 }
 
 float Tile::getWidth() const
 {
-	return width;
+	return this->width;
 }
 
 float Tile::getHeight() const
 {
-	return height;
+	return this->height;
 }
 
 bool Tile::is_in_frame() const
@@ -43,10 +57,10 @@ bool Tile::is_in_frame() const
 
 void Tile::setX(float dx)
 {
-	this->x += dx;
+	this->x = dx;
 }
 
 void Tile::setY(float dy)
 {
-	this->y += dy;
+	this->y = dy;
 }

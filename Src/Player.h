@@ -14,13 +14,13 @@ public:
 	float getGravity() const;
 
 	void setVx(float in_x);
-	void setVY(float in_y);
+	void setVy(float in_y);
 
 	void applyGravity(float dt);
 	void jump(float dt);
 
 private:
 	glm::vec2 velocity;
-	float gravity = -98.0f;
+	float gravity = -100.0f;
 };
 

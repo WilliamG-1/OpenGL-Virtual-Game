@@ -1,11 +1,5 @@
 #include "Window.h"
 #include <iostream>
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	// make sure the viewport matches the new window dimensions; note that width and 
-	// height will be significantly larger than specified on retina displays.
-	glViewport(0, 0, width, height);
-}
 
 Window::Window(int width, int height, const char* title)
 	:
@@ -20,7 +14,7 @@ Window::Window(int width, int height, const char* title)
 		glfwTerminate();
 	}	
 	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) { glViewport(0, 0, width, height); });
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();

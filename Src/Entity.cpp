@@ -8,31 +8,26 @@ Entity::Entity(float in_x, float in_y, float in_width, float in_height)
 	height = in_height;
 }
 
-void Entity::moveX(int direction, float dt)
+void Entity::moveX(float dt)
 {
-	if (direction == 1)
+	if (xVel > 0)
 	{
 		movement[static_cast<int>(MoveState::MOVING_RIGHT)] = true;
 		movement[static_cast<int>(MoveState::MOVING_LEFT)] = false;
 	}
-	if (direction == -1)
+	else if(xVel < 0)
 	{
 		movement[static_cast<int>(MoveState::MOVING_RIGHT)] = 0; // Not Moving Right
 		movement[static_cast<int>(MoveState::MOVING_LEFT)] = 1;  // Moving Left
 	}
 
-	this->x += (direction * xVel) * dt;
+	this->x += xVel * dt;
 }
 
 void Entity::moveY(float dt)
 {
 	this->y += (this->yVel)*dt;
-	if (this->yVel < 0)
-	{
-		movement[static_cast<int>(MoveState::FALLING)] = true;
-	}
-	else
-		movement[static_cast<int>(MoveState::FALLING)] = false;
+	
 }
 
 bool Entity::is_moving_left() const
@@ -47,7 +42,7 @@ bool Entity::is_moving_right() const
 
 bool Entity::is_jumping() const
 {
-	return movement[static_cast<int>(MoveState::JUMPING)];
+	return yVel > 0;
 }
 
 bool Entity::is_falling() const
@@ -57,7 +52,7 @@ bool Entity::is_falling() const
 
 bool Entity::is_moving()
 {
-	for (int i = 1; i < 5; i++)
+	for (int i = 1; i < 4; i++)
 	{
 		if (movement[i])
 			return true;
@@ -85,6 +80,8 @@ bool Entity::can_move_down() const
 	return canMove[static_cast<int>(CanMove::DOWN)];
 }
 
+// ===================== Getters ========================== \\
+
 float Entity::getX() const
 {
 	return x;
@@ -105,6 +102,18 @@ float Entity::getHeight() const
 	return height;
 }
 
+float Entity::getXVelocity() const
+{
+	return xVel;
+}
+
+float Entity::getYVelocity() const
+{
+	return yVel;
+}
+
+// ====================== Setters ========================== \\
+
 void Entity::setX(float x)
 {
 	this->x = x;
@@ -115,7 +124,6 @@ void Entity::setY(float y)
 	this->y = y;
 }
 
-
 void Entity::set_moving_right_state(bool state)
 {
 	movement[static_cast<int>(MoveState::MOVING_RIGHT)] = state;
@@ -124,6 +132,16 @@ void Entity::set_moving_right_state(bool state)
 void Entity::set_moving_left_state(bool state)
 {
 	movement[static_cast<int>(MoveState::MOVING_LEFT)] = state;  // Moving Left
+}
+
+void Entity::set_moving_up_state(bool state)
+{
+	movement[static_cast<int>(MoveState::JUMPING)] = state;
+}
+
+void Entity::set_falling_state(bool state)
+{
+	movement[static_cast<int>(MoveState::FALLING)] = state;
 }
 
 void Entity::set_can_move_left(bool state)

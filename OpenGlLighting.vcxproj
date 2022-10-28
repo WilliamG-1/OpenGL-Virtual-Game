@@ -150,6 +150,13 @@
     <ClCompile Include="Extern\Imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="Extern\Imgui\imgui_tables.cpp" />
     <ClCompile Include="Extern\Imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Src\AngryBlock.cpp" />
+    <ClCompile Include="Src\Button.cpp" />
+    <ClCompile Include="Src\Camera.cpp" />
+    <ClCompile Include="Src\Fruit.cpp" />
+    <ClCompile Include="Src\GameState.cpp" />
+    <ClCompile Include="Src\Mushroom.cpp" />
+    <ClCompile Include="Src\Pig.cpp" />
     <ClCompile Include="Src\Entity.cpp" />
     <ClCompile Include="Src\Physics.cpp" />
     <ClCompile Include="Src\Player.cpp" />
@@ -181,6 +188,13 @@
     <ClInclude Include="Extern\Imgui\imstb_rectpack.h" />
     <ClInclude Include="Extern\Imgui\imstb_textedit.h" />
     <ClInclude Include="Extern\Imgui\imstb_truetype.h" />
+    <ClInclude Include="Src\Button.h" />
+    <ClInclude Include="Src\Camera.h" />
+    <ClInclude Include="Src\Fruit.h" />
+    <ClInclude Include="Src\GameState.h" />
+    <ClInclude Include="Src\AngryBlock.h" />
+    <ClInclude Include="Src\Mushroom.h" />
+    <ClInclude Include="Src\Pig.h" />
     <ClInclude Include="Src\Entity.h" />
     <ClInclude Include="Src\Physics.h" />
     <ClInclude Include="Src\Player.h" />

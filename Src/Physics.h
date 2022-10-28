@@ -1,17 +1,21 @@
 #pragma once
 #include "Entity.h"
+#include "Fruit.h"
+#include "Player.h"
 #include "Level.h"
 #include "Tile.h"
+#include "Button.h"
 class Physics
 {
 public:
 	
 	static bool entity_clamped_to_tile(Entity& e, Level& l);
-	static bool is_collision_player_tile(Entity& e, Tile& t);
-	static bool entity_right_collide_left_tile(Entity& e, Tile& t);
-	static bool entity_left_collide_right_tile(Entity& e, Tile& t);
-	static bool entity_top_collide_bottom_tile(Entity& e, Tile& t);
-	static bool entity_bottom_collide_top_tile(Entity& e, Tile& t);
+	static bool is_collision_player_tile(Entity& player, Tile& t);
+	static bool is_collision_player_entity_f(Player& player, Entity& e, float p_offset = 9.0f, float e_lr_offset = 20.0f, float e_u_offset = 15.0f, float e_d_offset = 15.0f);
+	static bool is_collision_player_entity_a(Player& player, Entity& e);
+	static bool is_collision_player_fruit(Player& player, Fruit& fruit);
+
+	static bool mouse_inside_button(double xMousePos, double yMousePos, Button& button);
 private:
 	Physics() {}
 };
