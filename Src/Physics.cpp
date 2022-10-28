@@ -37,6 +37,15 @@ bool Physics::is_collision_player_fruit(Player& player, Fruit& fruit)
 		);
 }
 
+bool Physics::mouse_inside_button(double xMousePos, double yMousePos, Button& button)
+{
+	return (
+			   xMousePos >= button.getX()						&&
+			   xMousePos <= button.getX() + button.getWidth()	&&
+			   yMousePos >= button.getY()						&&
+			   yMousePos <= button.getY() + button.getHeight()
+		   );
+}
 
 
 

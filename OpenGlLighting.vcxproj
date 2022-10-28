@@ -151,6 +151,7 @@
     <ClCompile Include="Extern\Imgui\imgui_tables.cpp" />
     <ClCompile Include="Extern\Imgui\imgui_widgets.cpp" />
     <ClCompile Include="Src\AngryBlock.cpp" />
+    <ClCompile Include="Src\Button.cpp" />
     <ClCompile Include="Src\Camera.cpp" />
     <ClCompile Include="Src\Fruit.cpp" />
     <ClCompile Include="Src\GameState.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="Extern\Imgui\imstb_rectpack.h" />
     <ClInclude Include="Extern\Imgui\imstb_textedit.h" />
     <ClInclude Include="Extern\Imgui\imstb_truetype.h" />
+    <ClInclude Include="Src\Button.h" />
     <ClInclude Include="Src\Camera.h" />
     <ClInclude Include="Src\Fruit.h" />
     <ClInclude Include="Src\GameState.h" />

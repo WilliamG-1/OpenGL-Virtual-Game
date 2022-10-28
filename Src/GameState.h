@@ -3,6 +3,7 @@
 #include <memory>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <string>
 #include "Level.h"
 #include "Renderer.h"
 #include "Shader.h"
@@ -15,14 +16,14 @@
 #include "Pig.h"
 #include "Fruit.h"
 #include "AngryBlock.h"
+#include "Button.h"
 
 class GameState
 {
 public:
-	GameState();
+	GameState(Shader& shader);
 	void set_game_state(unsigned int state);
 	void load_state();
-	void draw(Renderer& renderer, Shader& shader);
 
 	Level& get_current_level() { return c_level; }
 	std::vector<Tile>& get_current_tiles() { return v_GrassTiles; }
@@ -30,7 +31,7 @@ public:
 	std::vector<Fruit>& get_current_apples() { return v_Apples; }
 	std::vector<Fruit>& get_current_oranges() { return v_Oranges; }
 	std::vector<AngryBlock>& get_current_angry_blocks() { return v_AngryBlocks; }
-
+	std::vector<Button>& get_current_buttons() { return v_Buttons; }
 
 	Player& get_current_player() { return player; }
 
@@ -41,8 +42,13 @@ public:
 	VertexArray& get_apple_vao() { return VAOApple; }
 	VertexArray& get_orange_vao() { return VAOOrange; }
 	VertexArray& get_angry_block_vao() { return VAOABlock; }
-	unsigned int get_current_state() const { return current_state; }
+	std::vector<VertexArray>& get_current_button_vaos() { return v_VAOButtons; }
+
+	unsigned int get_current_game_state() const { return current_state; }
+
+
 private:
+	Shader shader;
 	Level c_level;
 	unsigned int current_state;
 	unsigned int game_over;
@@ -52,13 +58,18 @@ private:
 	Player player;
 	Entity box;
 	Tile backgroundTile;
+	
 
 	std::vector<Tile> v_GrassTiles;
 	std::vector<Fruit> v_Apples;
 	std::vector<Fruit> v_Oranges;
 	std::vector<Pig> v_Pigs;
 	std::vector<AngryBlock> v_AngryBlocks;
-	
+
+	std::vector<Button> v_Buttons;
+
+	std::vector<VertexArray> v_VAOButtons;
+
 	VertexArray VAOPlayer;
 	VertexArray VAOBackground;
 	VertexArray VAOGrass;
@@ -66,7 +77,7 @@ private:
 	VertexArray VAOApple;
 	VertexArray VAOOrange;
 	VertexArray VAOABlock;
-
+	
 
 	Texture playerTexture;
 	Texture backgroundTexture;
@@ -83,29 +94,33 @@ private:
 	float appleVert[20];
 	float orangeVert[20];
 	float aBlockVert[20];
+	float buttonVert[20];
 
 	glm::mat4 MVP;
 	glm::mat4 view;
 	glm::mat4 proj;
 	glm::mat4 model;
+
 	void load_game_over();
 	void load_level_1();
+	void load_main_menu();
 
-	void init_vertices(Entity& e, VertexArray& e_VAO, float(&vert)[20], float x, float y, float texture_x, float texture_y, float tex_right, float tex_top);
-	void init_vertices(Fruit& f, VertexArray& e_VAO, float(&vert)[20], float x, float y, float texture_x, float texture_y, float tex_right, float tex_top);
+	void init_vertices(Entity& e, VertexArray& e_VAO, float(&vert)[20], float x, float y, float tex_left, float tex_bottom, float tex_width, float tex_height);
+	void init_vertices(Fruit& f, VertexArray& e_VAO, float(&vert)[20], float x, float y, float tex_left, float tex_bottom, float tex_width, float tex_height);
+	void init_vertices(Button& b, VertexArray& b_VAO, float(&vert)[20], float x, float y, float tex_left, float tex_bottom, float tex_width, float tex_height);
 	
 	std::vector<char> level1 = {
 		//   1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20 
-			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', //1 
-			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 1
-			'X', 'X', 'X', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 3
+			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', //1 
+			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', // 1
+			'X', 'X', 'X', '-', '-', '-', '-', 'X', 'X', 'X', 'X', 'X', 'X', 'X', '-', '-', '-', '-', '-', '-', // 3
 			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 4
 			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 5
 			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 6
 			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 7
-			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', 'X', 'X', '-', '-', // 8
+			'-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', 'X', '-', '-', '-', 'X', 'X', 'X', '-', '-', // 8
 			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', // 9
-			'-', '-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 10
+			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 10
 			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 11
 			'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', // 12
 	};

@@ -1,7 +1,8 @@
 #include "GameState.h"
 
-GameState::GameState()
+GameState::GameState(Shader& shader)
 	:
+	shader(shader),
 	player(1.0f, 200.0f, 60.0f, 60.0f), 
 	box(0.0f, 0.0f, 64.0f, 64.0f),
 	backgroundTexture("Assets/Background/Green.png"),
@@ -13,6 +14,15 @@ GameState::GameState()
 	angryBlockTexture("Assets/Traps/Rock Head/AngryBlock.png")
 {
 
+	shader.setUniform1i("u_textures[0]", 0);
+	shader.setUniform1i("u_textures[1]", 1);
+	shader.setUniform1i("u_textures[2]", 2);
+	shader.setUniform1i("u_textures[3]", 3);
+	shader.setUniform1i("u_textures[4]", 4);
+	shader.setUniform1i("u_textures[5]", 5);
+	shader.setUniform1i("u_textures[6]", 6);
+	shader.setUniform1i("u_textures[7]", 7);
+	shader.setUniform1f("facing_right", 1.0f);
 }
 
 void GameState::set_game_state(unsigned int state)
@@ -24,27 +34,26 @@ void GameState::set_game_state(unsigned int state)
 void GameState::load_state()
 {
 	if (current_state == 0)
-		load_game_over();
+		load_main_menu();
 	if (current_state == 1)
 		load_level_1();
 }
 
-void GameState::draw(Renderer& renderer, Shader& shader)
+
+void GameState::load_main_menu()
 {
-	switch (current_state)
-	{
-	case 0: 
-		
-		break;
+	// Play Button
+	v_Buttons.push_back(Button(448.0f, 320.0f, 128.0f, 128.0f, "Assets/Menu/Buttons/Play.png"));
+	v_VAOButtons.push_back(VertexArray());
+	init_vertices(v_Buttons[0], v_VAOButtons[0], buttonVert, v_Buttons[0].getX(), v_Buttons[0].getY(), 0.0f, 0.0f, 1.0f, 1.0f);
+	v_Buttons[0].get_texture().init();
+	v_Buttons[0].get_texture().setVertAttribs(1, 2, 5, 3);
 
-	case 1: // Level 1
-
-		break;
-	}
+	v_Buttons[0].get_texture().bind();
 }
-
 void GameState::load_level_1()
 {
+	
 	c_level.init_level_layout(level1);
 
 	v_AngryBlocks.push_back(AngryBlock(320.0f, 200.0f, 98.0f, 98.0f));
@@ -56,10 +65,12 @@ void GameState::load_level_1()
 	{
 		v_Oranges.push_back(Fruit(200.0f + 50.0f * i, 64.0f, 44.0f, 44.0f));
 	}
+	for (int i = 0; i < 4; i++) v_Oranges.push_back(Fruit(44.0f * i, 640.0f, 44.0f, 44.0f));
+	for (int i = 0; i < 10; i++) v_Oranges.push_back(Fruit(210.0f, 256.0f + 44.0f * i, 44.0f, 44.0f));
 	for (int i = 1; i < 5; i++) v_Oranges.push_back(Fruit(910.0f + 50.0f * i, 320.0f, 44.0f, 44.0f));
 	v_Pigs.push_back(Pig(750.0f, 64.0f, 96.0f, 80.0f));
 	//v_Pigs.push_back(Pig(954.0f, 320.0f, 96.0f, 80.0f, 150.0f));
-	//v_Pigs.push_back(Pig(300.0f, 450.0f, 96.0f, 80.0f, 800.0f));
+	//v_Pigs.push_back(Pig(300.0f, 450.0f, 96.0f, 80.0f, 800.0f));k
 	
 
 	// Load Background
@@ -130,4 +141,11 @@ void GameState::init_vertices(Fruit& fruit, VertexArray& e_VAO, float(&vert)[20]
 	e_VAO.init(vert, 20, indices, 6);
 	e_VAO.setVertexAttribPointersf(0, 3, 5, 0);
 };
+
+void GameState::init_vertices(Button& b, VertexArray& b_VAO, float(&vert)[20], float x, float y, float tex_left, float tex_bottom, float tex_width, float tex_height)
+{
+	zArrayConverter::convert_coordinates_to_vert_tex_array_reference(vert, x, y, b.getWidth(), b.getHeight(), tex_left, tex_bottom, tex_width, tex_height);
+	b_VAO.init(vert, 20, indices, 6);
+	b_VAO.setVertexAttribPointersf(0, 3, 5, 0);
+}
 

@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "Level.h"
 #include "Tile.h"
+#include "Button.h"
 class Physics
 {
 public:
@@ -13,6 +14,8 @@ public:
 	static bool is_collision_player_entity_f(Player& player, Entity& e, float p_offset = 9.0f, float e_lr_offset = 20.0f, float e_u_offset = 15.0f, float e_d_offset = 15.0f);
 	static bool is_collision_player_entity_a(Player& player, Entity& e);
 	static bool is_collision_player_fruit(Player& player, Fruit& fruit);
+
+	static bool mouse_inside_button(double xMousePos, double yMousePos, Button& button);
 private:
 	Physics() {}
 };

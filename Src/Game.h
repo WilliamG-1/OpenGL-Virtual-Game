@@ -29,6 +29,9 @@ public:
 private:	
 	float screenWidth = 1024.0f;
 	float screenHeight = 768.0f;
+	
+	double xMousePos = 0;
+	double yMousePos = 0;
 	float moveSpeed = 40.0f;
 	float currentTexture = 0.0f;
 	Window window;
@@ -65,9 +68,8 @@ private:
 	float level_displacement = 0.0f;
 
 	
-	bool gameRunning = true;
+	
 	bool cancollideleftrightlol = true;
-	bool applyGravity = true;
 
 	float leftRightMove = 0.0f;
 
@@ -88,6 +90,10 @@ private:
 
 
 	void composeFrame();
+	void render_level1();
+	void render_main_menu();
+
+
 	void init_player_textures(float offset);
 	void init_enemy_texture(VertexArray& enemy_vao, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkingVector, std::vector<std::unique_ptr<Texture>>& runningVector, unsigned int idleFrames, unsigned int walkingFrames, unsigned int runningFrames, const std::string& idlePath, const std::string& walkPath, const std::string& runningPath);
 	void init_fruit_texture(VertexArray& fruit_vao, std::vector<std::unique_ptr<Texture>>& fruitVector, unsigned int spriteCount, const std::string& path);

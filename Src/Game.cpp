@@ -3,6 +3,9 @@
 #include <iomanip>
 #define WIDNOW_WIDTH = 1024.0F
 #define WINDOW_HEIGHT = 768.0F
+int gameLevel = 0;
+bool gameRunning = true;
+
 Game::Game()
 	:
 	player(playerStartingCoords.x, playerStartingCoords.y, 64.0f, 64.0f), box(0.0f, 0.0f, 64.0f, 64.0f),
@@ -14,24 +17,110 @@ Game::Game()
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// Either exit game or return to main menu when excape key is pressed
+	glfwSetKeyCallback(window.getWindow(), [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		{
+			if (gameLevel == 0)
+				gameLevel = -1;
+			else
+				gameLevel = 0;
+		}
+		});
 
+	std::string vertSource;
+	std::string fragSource;
+	// Read the contents of the shaders into our strings
+	shader.readShaderFile("Shaders/Vertex.vert", vertSource);
+	shader.readShaderFile("Shaders/Fragment.frag", fragSource);
+
+	// Initialize our shader by passing the source code
+	shader.initShaders(vertSource, fragSource);
+
+	// Finally, use our shader program
+	shader.use();
 }
 
 void Game::run()
 {
 	
+	
+
+	while (gameRunning)
+	{
+		if (gameLevel == -1)		
+			gameRunning = false;	// Quit Game
+		if (gameLevel == 0)
+			render_main_menu();		// Main Menu
+		if (gameLevel == 1)
+			render_level1();		// Level 1
+		
+	}
+
+	// Destroy stuff
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
+	glfwTerminate();
+}
+void Game::render_main_menu()
+{
+	
+	shader.setUniform1f("u_xTextureOffset", 0.0f);
+	shader.setUniform1f("u_yTextureOffset", 0.0f);
+	shader.setUniform1f("u_xInverseoffset", 0.0f);
+	shader.setUniform1f("facing_right", 1.0f);
+
+	proj = glm::ortho(0.0f, screenWidth, 0.0f, screenHeight, -1.0f, 1.0f);
+	view = glm::mat4(1.0f);
+	model = glm::mat4(1.0f);
+	MVP_Scene = model * proj * view;
+	shader.setUniformMat4f("u_MVP", MVP_Scene);
+	GameState menu(shader);
+	menu.set_game_state(0);
+	menu.load_state();
+	while (gameLevel == 0)
+	{
+		// Clear Screen
+		glClearColor(0.15f, 0.32f, 0.5f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+
+
+		renderer.draw(menu.get_current_button_vaos()[0], shader);
+
+		if (glfwGetKey(window.getWindow(), GLFW_KEY_1) == GLFW_PRESS)
+		{
+			gameLevel = 1;
+			menu.set_game_state(1);
+		}
+		glfwGetCursorPos(window.getWindow(), &xMousePos, &yMousePos);
+		
+		
+		if (Physics::mouse_inside_button(xMousePos, yMousePos, menu.get_current_buttons()[0]) && glfwGetMouseButton(window.getWindow(), GLFW_MOUSE_BUTTON_1 == GLFW_PRESS))
+			gameLevel = 1;
+	
+		glfwSwapBuffers(window.getWindow());
+		glfwPollEvents();
+		update_dt();
+	}
+
+
+}
+void Game::render_level1()
+{
 	composeFrame();
-	GameState level1;
+	GameState level1(shader);
 	level1.set_game_state(1);
 	level1.load_state();
 	player = level1.get_current_player();
 	level1.get_current_level().init_grass_tiles(768.0f);
 	board = level1.get_current_level().get_board();
 
-
-	while (gameRunning)
+	while (gameLevel == 1)
 	{
-		
+
 		ImGui_ImplGlfw_NewFrame();
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui::NewFrame();
@@ -39,7 +128,7 @@ void Game::run()
 		// Clear Screen
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-		
+
 		// ========================= ImGui ==============================
 		ImGui::Begin("Window");
 		ImGui::Text("Player Coordinates: (%.2f., %.2f)", player.getX(), player.getY());
@@ -51,7 +140,7 @@ void Game::run()
 		ImGui::Text("Bounds: (%.2f, %.2f)", leftBound, rightBound);
 		ImGui::Text("pCenter = %.2f", playerMiddle);
 		ImGui::Text("frame: %.2f", a_playerFrames[0]);
-		ImGui::End();	
+		ImGui::End();
 
 		// <=========================== Rendering Code ==========================> \\
 
@@ -63,19 +152,19 @@ void Game::run()
 		//}
 		for (auto& pig : level1.get_current_pigs())
 			update_pig(pig, level1.get_pig_vao(), level1.get_current_apples()[0], pig.get_walk_frame(), pig.get_run_frame());
-		
+
 		for (auto& apple : level1.get_current_apples())
 			update_fruit(apple, level1.get_apple_vao(), apple.get_frame(), 3.0f);
-		
+
 		for (auto& orange : level1.get_current_oranges())
 		{
 			update_fruit(orange, level1.get_orange_vao(), orange.get_frame(), 5.0f);
 		}
 		update_angry_block(level1.get_current_angry_blocks()[0], level1.get_angry_block_vao(), level1.get_current_angry_blocks()[0].get_blink_frame());
 		update_player(level1, level1.get_player_vao(), level1.get_current_level());
-		
+
 		//update_fruit(level1.get_current_apples()[0], level1.get_apple_vao(), level1.get_current_apples()[0].get_frame());
-		
+
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwSwapBuffers(window.getWindow());
@@ -83,20 +172,15 @@ void Game::run()
 		update_dt();
 		level_displacement = level1.get_current_level().get_tile_displacement_x();
 	}
-
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-
-	glfwTerminate();
 }
 void Game::processInput(Level& level)
 {
 
-	if (glfwGetKey(window.getWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS && gameLevel > 0)
 	{
-		gameRunning = false;
+		gameLevel = 0;
 	}
+
 
 	// Left Movement
 	if (glfwGetKey(window.getWindow(), GLFW_KEY_A) == GLFW_PRESS)
@@ -174,34 +258,9 @@ void Game::processInput(Level& level)
 
 }  
 void Game::composeFrame()
-{
-
-	std::string vertSource;
-	std::string fragSource;
-	// Read the contents of the shaders into our strings
-	shader.readShaderFile("Shaders/Vertex.vert", vertSource);
-	shader.readShaderFile("Shaders/Fragment.frag", fragSource);
-
-	// Initialize our shader by passing the source code
-	shader.initShaders(vertSource, fragSource);
-	
-	// Finally, use our shader program
-	shader.use();
-	
-	
+{		
 	// <-------------------- Uniform Stuff ------------------------> \\
 	
-	shader.setUniform1i("u_BackgroundTexture", 0);
-	shader.setUniform1i("u_PlayerTexture", 1);
-	shader.setUniform1i("u_PigTexture", 2);
-	shader.setUniform1i("u_AppleTexture", 3);
-	shader.setUniform1i("u_GrassTexture", 4);
-	shader.setUniform1i("u_OrangeTexture", 5);
-	shader.setUniform1i("u_AngryBlockTexture", 6);
-
-	shader.setUniform1f("facing_right", 1.0f);
-
-
 	playerScreenX = player.getX();
 	MVP_Player = playerModel * proj * playerView;
 	playerView = glm::translate(glm::mat4(1.0f), glm::vec3(playerScreenX, playerScreenY, 0.0f));
@@ -327,7 +386,7 @@ void Game::do_y_collisions(GameState& gs, Level& level)
 	for (auto& angryblock : gs.get_current_angry_blocks())
 	{
 		
-		if (Physics::is_collision_player_entity_f(player, angryblock, 0.0f, 0.0f, -9.0f, 0.0f) && player.is_falling())
+		if (Physics::is_collision_player_entity_f(player, angryblock, 0.0f, 0.0f, -12.0f, 0.0f) && player.is_falling())
 		{
 			cancollideleftrightlol = false;
 			player.set_can_move_down(false);
