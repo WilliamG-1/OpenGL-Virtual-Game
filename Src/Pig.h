@@ -15,7 +15,6 @@ public:
 	void enrage();
 
 	bool is_enraged();
-	bool spotted_player(Entity& player);
 
 	float& get_walk_frame() { return walkFrame; }
 	float& get_run_frame() { return runFrame; }

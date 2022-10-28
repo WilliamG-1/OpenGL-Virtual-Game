@@ -11,7 +11,7 @@ uniform sampler2D u_GrassTexture;
 uniform sampler2D u_PigTexture;
 uniform sampler2D u_AppleTexture;
 uniform sampler2D u_OrangeTexture;
-
+uniform sampler2D u_AngryBlockTexture;
 
 uniform float currentTex = 0.0f;
 
@@ -37,6 +37,9 @@ void main()
         break;
     case 5:
         color = texture(u_OrangeTexture, TexCoord);
+        break;
+    case 6:
+        color = texture(u_AngryBlockTexture, TexCoord);
         break;
     }
     

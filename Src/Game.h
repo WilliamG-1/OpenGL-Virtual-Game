@@ -66,6 +66,8 @@ private:
 
 	
 	bool gameRunning = true;
+	bool cancollideleftrightlol = true;
+	bool applyGravity = true;
 
 	float leftRightMove = 0.0f;
 
@@ -93,10 +95,10 @@ private:
 	void init_vertices(Fruit& f, VertexArray& e_VAO, float(&vert)[20], float x, float y, float texture_x, float texture_y, float tex_right, float tex_top);
 	void buffer_next_frame(VertexArray& vao, Texture& texture, float(&vert)[20], float space = 11 / 384);
 
-	void update_player(VertexArray& player_vao, Level& level);
+	void update_player(GameState& gs, VertexArray& player_vao, Level& level);
 	void do_player_entity_collisions();
-	void do_x_collisions(Level& level);
-	void do_y_collisions(Level& level);
+	void do_x_collisions(GameState& gs, Level& level);
+	void do_y_collisions(GameState& gs, Level& level);
 	void do_player_idle_animation(int frames, float& ctr, float textureStride, float xInverseOffset);
 	void do_player_running_animation(int frames, float& ctr, float xTexStride, float yTexStride = 0.315f);
 	void do_pig_walk_animation(int frames, float& walkCounter, float textureStride, float yTexStride, float xInverseOffest);
@@ -105,6 +107,10 @@ private:
 	void update_fruit(Fruit& fruit, VertexArray& vao, float& frame, float textureSlot);
 	void do_fruit_animation(int frames, float& counter, float xTextureStride);
 
+	void update_angry_block(AngryBlock& angryBlock, VertexArray& ablock_vao, float& frame);
+	void update_ablock_animations(int frames, float& counter, float xTextureStride);
+
+
 	void update_tiles(Level& level, VertexArray& background_vao, VertexArray& grass_vao);
 
 	void update_pig(Pig& pig, VertexArray& pig_vao, Fruit& fruit, float& walk_frame, float& run_frame);
@@ -112,6 +118,7 @@ private:
 	void do_fruit_animatinos(Fruit& fruit, std::vector<std::unique_ptr<Texture>>& frames, float& currentFrame);
 
 	
+
 	void update_texture_frame(float& variable, float dt, float max_value);
 	void update_dt();
 	// Temporary stuff lol for testing

@@ -11,12 +11,20 @@ bool Physics::is_collision_player_tile(Entity& player, Tile& t)
 	return ((player.getX() + player.getWidth() - 2.0f > t.getX() && player.getX() + 2.0f < t.getX() + t.getWidth()) && ((player.getY() + player.getHeight() > t.getY()) && (player.getY() < t.getY() + t.getHeight())));
 }
 
-bool Physics::is_collision_player_entity(Player& player, Entity& e)
+bool Physics::is_collision_player_entity_f(Player& player, Entity& e, float p_offset, float e_lr_offset, float e_u_offset, float e_d_offset)
 {                  
-	return (((player.getX() + player.getWidth() - 9.0f) > (e.getX() + 20.0f)) &&		// Right Player Box to Left Entity Box
-			 (player.getX() + 9.0f < (e.getX() + e.getWidth() - 20.0f)) &&				// Left Player Box to Right Entity Box	
-			((player.getY() + player.getHeight() - 9.0f) > (e.getY() + 10.0f)) &&	    // Top Player Box to Bottom Entity box
-			 (player.getY() + 9.0f < (e.getY() + e.getHeight() - 15.0f)));				// Bottom Player Box to Top Entity Box
+	return (((player.getX() + player.getWidth() - p_offset) > (e.getX() + e_lr_offset)) &&		// Right Player Box to Left Entity Box
+			 (player.getX() + p_offset < (e.getX() + e.getWidth() - e_lr_offset)) &&				// Left Player Box to Right Entity Box	
+			((player.getY() + player.getHeight() - p_offset) > (e.getY() + e_d_offset)) &&	    // Top Player Box to Bottom Entity box
+			 (player.getY() + p_offset < (e.getY() + e.getHeight() - e_u_offset)));				// Bottom Player Box to Top Entity Box
+}
+
+bool Physics::is_collision_player_entity_a(Player& player, Entity& e)
+{
+	return (((player.getX() + player.getWidth()) > (e.getX())) &&		// Right Player Box to Left Entity Box
+			 (player.getX() < (e.getX() + e.getWidth())) &&				// Left Player Box to Right Entity Box	
+			((player.getY() + player.getHeight()) > (e.getY())) &&	    // Top Player Box to Bottom Entity box
+			(player.getY() < (e.getY() + e.getHeight())));				// Bottom Player Box to Top Entity Box
 }
 
 bool Physics::is_collision_player_fruit(Player& player, Fruit& fruit)

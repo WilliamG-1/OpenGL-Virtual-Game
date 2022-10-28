@@ -9,7 +9,8 @@ GameState::GameState()
 	playerTexture("Assets/Virtual Guy/a_Player.png"),
 	pigTexture("Assets/Enemies/AngryPig/a_Pig.png"),
 	appleTexture("Assets/Items/Fruits/Apple.png"),
-	orangeTexture("Assets/Items/Fruits/Orange.png")
+	orangeTexture("Assets/Items/Fruits/Orange.png"),
+	angryBlockTexture("Assets/Traps/Rock Head/AngryBlock.png")
 {
 
 }
@@ -46,6 +47,7 @@ void GameState::load_level_1()
 {
 	c_level.init_level_layout(level1);
 
+	v_AngryBlocks.push_back(AngryBlock(320.0f, 200.0f, 98.0f, 98.0f));
 	v_Apples.push_back(Fruit(1212.0f, 450, 72.0f, 72.0f));
 	//v_Apples.push_back(Fruit(200.0f, 450.0f, 72.0f, 72.0f));
 	//v_Apples.push_back(Fruit(500.0f, 64.0f, 72.0f, 72.0f));
@@ -92,7 +94,10 @@ void GameState::load_level_1()
 	pigTexture.init();
 	pigTexture.setVertAttribs(1, 2, 5, 3);
 
-
+	// Angry Block
+	init_vertices(v_AngryBlocks[0], VAOABlock, aBlockVert, 0.0f, 0.0f, 0.0238095, 0.11905, 0.15238 , 0.7619);
+	angryBlockTexture.init();
+	angryBlockTexture.setVertAttribs(1, 2, 5, 3);
 	
 	backgroundTexture.bind();
 	playerTexture.bind(1);
@@ -100,6 +105,7 @@ void GameState::load_level_1()
 	appleTexture.bind(3);
 	grassTexture.bind(4);	
 	orangeTexture.bind(5);
+	angryBlockTexture.bind(6);
 }
 
 

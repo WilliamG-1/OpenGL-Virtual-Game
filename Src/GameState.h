@@ -14,7 +14,7 @@
 #include "Tile.h"
 #include "Pig.h"
 #include "Fruit.h"
-
+#include "AngryBlock.h"
 
 class GameState
 {
@@ -29,6 +29,8 @@ public:
 	std::vector<Pig>& get_current_pigs() { return v_Pigs; }
 	std::vector<Fruit>& get_current_apples() { return v_Apples; }
 	std::vector<Fruit>& get_current_oranges() { return v_Oranges; }
+	std::vector<AngryBlock>& get_current_angry_blocks() { return v_AngryBlocks; }
+
 
 	Player& get_current_player() { return player; }
 
@@ -38,6 +40,7 @@ public:
 	VertexArray& get_pig_vao() { return VAOPig; }
 	VertexArray& get_apple_vao() { return VAOApple; }
 	VertexArray& get_orange_vao() { return VAOOrange; }
+	VertexArray& get_angry_block_vao() { return VAOABlock; }
 	unsigned int get_current_state() const { return current_state; }
 private:
 	Level c_level;
@@ -54,7 +57,7 @@ private:
 	std::vector<Fruit> v_Apples;
 	std::vector<Fruit> v_Oranges;
 	std::vector<Pig> v_Pigs;
-	
+	std::vector<AngryBlock> v_AngryBlocks;
 	
 	VertexArray VAOPlayer;
 	VertexArray VAOBackground;
@@ -62,6 +65,8 @@ private:
 	VertexArray VAOPig;
 	VertexArray VAOApple;
 	VertexArray VAOOrange;
+	VertexArray VAOABlock;
+
 
 	Texture playerTexture;
 	Texture backgroundTexture;
@@ -69,6 +74,7 @@ private:
 	Texture pigTexture;
 	Texture appleTexture;
 	Texture orangeTexture;
+	Texture angryBlockTexture;
 
 	float playerVert[20];
 	float backgroundVert[20];
@@ -76,6 +82,7 @@ private:
 	float pigVert[20];
 	float appleVert[20];
 	float orangeVert[20];
+	float aBlockVert[20];
 
 	glm::mat4 MVP;
 	glm::mat4 view;
@@ -91,13 +98,13 @@ private:
 		//   1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20 
 			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', //1 
 			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 1
-			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 3
+			'X', 'X', 'X', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 3
 			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 4
 			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 5
-			'-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 6
-			'-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 7
+			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 6
+			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 7
 			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', 'X', 'X', '-', '-', // 8
-			'-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', // 9
+			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', // 9
 			'-', '-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 10
 			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 11
 			'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', // 12

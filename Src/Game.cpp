@@ -63,7 +63,7 @@ void Game::run()
 		//}
 		for (auto& pig : level1.get_current_pigs())
 			update_pig(pig, level1.get_pig_vao(), level1.get_current_apples()[0], pig.get_walk_frame(), pig.get_run_frame());
-
+		
 		for (auto& apple : level1.get_current_apples())
 			update_fruit(apple, level1.get_apple_vao(), apple.get_frame(), 3.0f);
 		
@@ -71,7 +71,9 @@ void Game::run()
 		{
 			update_fruit(orange, level1.get_orange_vao(), orange.get_frame(), 5.0f);
 		}
-		update_player(level1.get_player_vao(), level1.get_current_level());
+		update_angry_block(level1.get_current_angry_blocks()[0], level1.get_angry_block_vao(), level1.get_current_angry_blocks()[0].get_blink_frame());
+		update_player(level1, level1.get_player_vao(), level1.get_current_level());
+		
 		//update_fruit(level1.get_current_apples()[0], level1.get_apple_vao(), level1.get_current_apples()[0].get_frame());
 		
 		ImGui::Render();
@@ -195,6 +197,7 @@ void Game::composeFrame()
 	shader.setUniform1i("u_AppleTexture", 3);
 	shader.setUniform1i("u_GrassTexture", 4);
 	shader.setUniform1i("u_OrangeTexture", 5);
+	shader.setUniform1i("u_AngryBlockTexture", 6);
 
 	shader.setUniform1f("facing_right", 1.0f);
 
@@ -211,14 +214,14 @@ void Game::composeFrame()
 	shader.setUniformMat4f("u_MVP", MVP_Scene);
 } 
 
-void Game::update_player(VertexArray& player_vao, Level& level)
+void Game::update_player(GameState& gs, VertexArray& player_vao, Level& level)
 {
 	playerView = glm::translate(playerModel, glm::vec3(playerScreenX, player.getY(), 0.0f));
 
 	player.moveX(dt);
-	do_x_collisions(level);
+	do_x_collisions(gs, level);
 	player.moveY(dt);
-	do_y_collisions(level);
+	do_y_collisions(gs, level);
 	playerMiddle = (playerScreenX + playerScreenX + player.getWidth()) / 2;
 
 	MVP_Player = playerModel * proj * playerView;
@@ -235,7 +238,7 @@ void Game::do_player_entity_collisions()
 {
 	// To do
 }
-void Game::do_x_collisions(Level& level)
+void Game::do_x_collisions(GameState& gs, Level& level)
 {
 	if (player.getX() <= 0.05f && player.is_moving_left())
 	{
@@ -249,16 +252,7 @@ void Game::do_x_collisions(Level& level)
 	}
 	for (auto& tile : level.get_grass_blocks())
 	{
-		//if (Physics::is_collision_player_tile(player, tile) && player.is_moving_left())
-		//{
-		//	player.setX(player.getX() + 0.1f);
-		//	playerScreenX = playerScreenX + 0.1f;
-		//}
-		//if (Physics::is_collision_player_tile(player, tile) && player.is_moving_right())
-		//{
-		//	player.setX(player.getX() - 1.0f);
-		//	playerScreenX = playerScreenX - 1.0f;
-		//}
+
 		if (Physics::is_collision_player_tile(player, tile) && player.is_moving_left())
 		{
 			//updatePastX = false;
@@ -276,9 +270,28 @@ void Game::do_x_collisions(Level& level)
 			//playerScreenX = 
 		}
 	}
+
+	// Check for collisions with Angry block (moving)
+	for (auto& angryblock : gs.get_current_angry_blocks())
+	{
+		if (Physics::is_collision_player_entity_a(player, angryblock) && player.is_moving_left() && cancollideleftrightlol)
+		{
+			player.setX(player.getX() + (angryblock.getX() + angryblock.getWidth() - player.getX()));	// Set the players x coordinate by subtracting the distance traveled "inside" the object from the current x coordinate; Essentially resets to outside the entity						
+			playerScreenX = playerScreenX + (angryblock.getX() + level_displacement + angryblock.getWidth() - playerScreenX);
+
+		}
+
+		if (Physics::is_collision_player_entity_a(player, angryblock) && player.is_moving_right() && cancollideleftrightlol)
+		{
+			player.setX(player.getX() - (player.getX() + player.getWidth() - angryblock.getX()));
+			playerScreenX = playerScreenX - (playerScreenX + player.getWidth() - angryblock.getX() - level_displacement);
+
+		}
+	}
+
 	player.applyGravity(dt);
 }
-void Game::do_y_collisions(Level& level)
+void Game::do_y_collisions(GameState& gs, Level& level)
 {
 	for (auto& tile : level.get_grass_blocks())
 	{
@@ -308,6 +321,31 @@ void Game::do_y_collisions(Level& level)
 				//jkplayer.set_falling_state(true);
 			}
 		}
+	}
+
+	// angry block dude collisions
+	for (auto& angryblock : gs.get_current_angry_blocks())
+	{
+		
+		if (Physics::is_collision_player_entity_f(player, angryblock, 0.0f, 0.0f, -9.0f, 0.0f) && player.is_falling())
+		{
+			cancollideleftrightlol = false;
+			player.set_can_move_down(false);
+			player.setVy(0.0f);
+			player.set_can_jump(true);
+			player.set_can_move_down(false);
+			player.setY(angryblock.getY() + angryblock.getHeight() + 1.0f);
+		}
+		else cancollideleftrightlol = true;
+		if (Physics::is_collision_player_entity_f(player, angryblock, 0.0f, 0.0f, 0.0f, -9.0f) && player.is_jumping())
+		{
+			cancollideleftrightlol = false;
+			player.setVy(-angryblock.getYVelocity() * dt * 2);
+			player.setY(angryblock.getY() - player.getHeight() - (angryblock.getYVelocity() * dt) - 0.6);
+			player.set_can_move_down(true);
+		}
+		else cancollideleftrightlol = true;
+		
 	}
 	
 }
@@ -439,6 +477,27 @@ void Game::do_fruit_animation(int frames, float& counter, float xTextureStride)
 	shader.setUniform1f("u_xTextureOffset", (float)((int)counter) * xTextureStride);
 }
 
+void Game::update_angry_block(AngryBlock& angryBlock, VertexArray& ablock_vao, float& frame)
+{
+	angryBlock.update_timer(dt);
+	
+	shader.setUniform1f("u_yTextureOffset", 0.0f);
+	shader.setUniform1f("u_xInverseOffset", 0.0f);
+	shader.setUniform1f("facing_right", 1.0f);
+	shader.setUniform1f("currentTex", 6.0f);
+	angryBlock.moveY(dt);
+	update_ablock_animations(5, angryBlock.get_blink_frame(), 0.0f);
+	playerView = glm::translate(glm::mat4(1.0f), glm::vec3(angryBlock.getX() + level_displacement, angryBlock.getY(), 0.0f));
+	MVP_Scene = model * proj * playerView;
+	shader.setUniformMat4f("u_MVP", MVP_Scene);
+	renderer.draw(ablock_vao, shader);
+}
+void Game::update_ablock_animations(int frames, float& counter, float xTextureStride)
+{
+
+	shader.setUniform1f("u_xTextureOffset", (float)(int)counter * (0.15238 + 0.04761));
+
+}
 
 // Old Stuff
 void Game::init_player_textures(float offset)

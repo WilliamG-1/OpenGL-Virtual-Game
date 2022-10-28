@@ -150,6 +150,7 @@
     <ClCompile Include="Extern\Imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="Extern\Imgui\imgui_tables.cpp" />
     <ClCompile Include="Extern\Imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Src\AngryBlock.cpp" />
     <ClCompile Include="Src\Camera.cpp" />
     <ClCompile Include="Src\Fruit.cpp" />
     <ClCompile Include="Src\GameState.cpp" />
@@ -189,6 +190,7 @@
     <ClInclude Include="Src\Camera.h" />
     <ClInclude Include="Src\Fruit.h" />
     <ClInclude Include="Src\GameState.h" />
+    <ClInclude Include="Src\AngryBlock.h" />
     <ClInclude Include="Src\Mushroom.h" />
     <ClInclude Include="Src\Pig.h" />
     <ClInclude Include="Src\Entity.h" />
