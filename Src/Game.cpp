@@ -27,7 +27,8 @@ Game::Game()
 				gameLevel = 0;
 		}
 		});
-
+	
+	std::string s;
 	std::string vertSource;
 	std::string fragSource;
 	// Read the contents of the shaders into our strings
