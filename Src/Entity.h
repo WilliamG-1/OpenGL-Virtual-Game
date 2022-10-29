@@ -38,6 +38,7 @@ public:
 	float getY() const;
 	float getWidth() const;
 	float getHeight() const;
+
 	float getXVelocity() const;
 	float getYVelocity() const;
 	void setX(float x);

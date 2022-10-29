@@ -170,7 +170,9 @@
     <ClCompile Include="Src\Renderer.cpp" />
     <ClCompile Include="Src\Shader.cpp" />
     <ClCompile Include="Extern\stb_image\stb_image.cpp" />
+    <ClCompile Include="Src\Slime.cpp" />
     <ClCompile Include="Src\Texture.cpp" />
+    <ClCompile Include="Src\TextureOffestConverter.cpp" />
     <ClCompile Include="Src\Tile.cpp" />
     <ClCompile Include="Src\VertexArray.cpp" />
     <ClCompile Include="Src\VertexBuffer.cpp" />
@@ -206,8 +208,11 @@
     <ClInclude Include="Src\Renderer.h" />
     <ClInclude Include="Src\Shader.h" />
     <ClInclude Include="Extern\stb_image\stb_image.h" />
+    <ClInclude Include="Src\Slime.h" />
     <ClInclude Include="Src\Texture.h" />
+    <ClInclude Include="Src\TextureOffestConverter.h" />
     <ClInclude Include="Src\Tile.h" />
+    <ClInclude Include="Src\Trophy.h" />
     <ClInclude Include="Src\VertexArray.h" />
     <ClInclude Include="Src\VertexBuffer.h" />
     <ClInclude Include="Src\Window.h" />

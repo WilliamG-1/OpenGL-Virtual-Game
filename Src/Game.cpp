@@ -18,7 +18,18 @@ Game::Game()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// Either exit game or return to main menu when excape key is pressed
+	
 	glfwSetKeyCallback(window.getWindow(), [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+		if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+		{
+			if (gameLevel > 1)
+				gameLevel--;					
+		}
+		if (key == GLFW_KEY_2 && action == GLFW_PRESS)
+		{
+			if (gameLevel > 0 && gameLevel < 2)
+				gameLevel++;
+		}
 		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		{
 			if (gameLevel == 0)
@@ -26,9 +37,7 @@ Game::Game()
 			else
 				gameLevel = 0;
 		}
-		});
-	
-	std::string s;
+	});
 	std::string vertSource;
 	std::string fragSource;
 	// Read the contents of the shaders into our strings
@@ -45,8 +54,6 @@ Game::Game()
 void Game::run()
 {
 	
-	
-
 	while (gameRunning)
 	{
 		if (gameLevel == -1)		
@@ -55,6 +62,8 @@ void Game::run()
 			render_main_menu();		// Main Menu
 		if (gameLevel == 1)
 			render_level1();		// Level 1
+		if (gameLevel == 2)
+			render_level2();		// Level 2
 		
 	}
 
@@ -111,15 +120,48 @@ void Game::render_main_menu()
 }
 void Game::render_level1()
 {
+	
+	GameState gs(shader);
+	gs.set_game_state(1);
+	gs.load_state();
+	player = gs.get_current_player();
+	gs.get_current_level().init_grass_tiles(768.0f);
+	board = gs.get_current_level().get_board();
 	composeFrame();
-	GameState level1(shader);
-	level1.set_game_state(1);
-	level1.load_state();
-	player = level1.get_current_player();
-	level1.get_current_level().init_grass_tiles(768.0f);
-	board = level1.get_current_level().get_board();
+	//update_player(gs, gs.get_player_vao(), gs.get_current_level());
 
 	while (gameLevel == 1)
+	{
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		update_tiles(gs.get_current_level(), gs.get_background_vao(), gs.get_grass_vao());
+		
+
+		for (Slime& slime : gs.get_current_slimes())
+			update_slime(slime, gs.get_slime_vao(), slime.get_current_walk_frame());
+
+		for (Fruit& fruit : gs.get_current_oranges())
+			update_fruit(fruit, gs.get_orange_vao(), fruit.get_frame(), 5);
+		update_player(gs, gs.get_player_vao(), gs.get_current_level());
+
+		glfwSwapBuffers(window.getWindow());
+		glfwPollEvents();
+		update_dt();
+		level_displacement = gs.get_current_level().get_tile_displacement_x();
+	}
+}
+void Game::render_level2()
+{
+	
+	GameState gs(shader);
+	gs.set_game_state(2);
+	gs.load_state();
+	player = gs.get_current_player();
+	gs.get_current_level().init_grass_tiles(768.0f);
+	board = gs.get_current_level().get_board();
+	composeFrame();
+	while (gameLevel == 2)
 	{
 
 		ImGui_ImplGlfw_NewFrame();
@@ -134,7 +176,7 @@ void Game::render_level1()
 		ImGui::Begin("Window");
 		ImGui::Text("Player Coordinates: (%.2f., %.2f)", player.getX(), player.getY());
 		ImGui::Text("Player Velocity: (%.2f, %.2f)", player.getVx(), player.getVy());
-		//ImGui::Text("Tile: (%.2f, %.2f)", level1.get_grass_blocks()[0].getX(), level1.get_grass_blocks()[0].getY());
+		//ImGui::Text("Tile: (%.2f, %.2f)", gs.get_grass_blocks()[0].getX(), gs.get_grass_blocks()[0].getY());
 		ImGui::Text("Tile Displacement: %.2f", level_displacement);
 		ImGui::Text("Player is moving: %d$", player.is_moving());
 		ImGui::Text("Player Screen Coords: (%.2f, %.2f)", playerScreenX, playerScreenY);
@@ -145,33 +187,35 @@ void Game::render_level1()
 
 		// <=========================== Rendering Code ==========================> \\
 
-		update_tiles(level1.get_current_level(), level1.get_background_vao(), level1.get_grass_vao());
+		update_tiles(gs.get_current_level(), gs.get_background_vao(), gs.get_grass_vao());
 
-		//for (auto& pig : level1.get_current_pigs())
-		//{
-		//	update_pig(level1.get_current_pigs()[0], level1.get_pig_vao(), level1.get_current_apples()[i], level1.get_current_pigs()[0].get_walk_frame(), level1.get_current_pigs()[i].get_run_frame());
-		//}
-		for (auto& pig : level1.get_current_pigs())
-			update_pig(pig, level1.get_pig_vao(), level1.get_current_apples()[0], pig.get_walk_frame(), pig.get_run_frame());
+		// Update all pigs
+		for (auto& pig : gs.get_current_pigs())					
+			update_pig(pig, gs.get_pig_vao(), gs.get_current_apples()[0], pig.get_walk_frame(), pig.get_run_frame());
 
-		for (auto& apple : level1.get_current_apples())
-			update_fruit(apple, level1.get_apple_vao(), apple.get_frame(), 3.0f);
+		// Update all angry blocks
+		for (auto& angryblock : gs.get_current_angry_blocks())
+			update_angry_block(angryblock, gs.get_angry_block_vao(), angryblock.get_blink_frame());
+		
+		// Update all apples
+		for (auto& apple : gs.get_current_apples())
+			update_fruit(apple, gs.get_apple_vao(), apple.get_frame(), 3.0f);
 
-		for (auto& orange : level1.get_current_oranges())
-		{
-			update_fruit(orange, level1.get_orange_vao(), orange.get_frame(), 5.0f);
-		}
-		update_angry_block(level1.get_current_angry_blocks()[0], level1.get_angry_block_vao(), level1.get_current_angry_blocks()[0].get_blink_frame());
-		update_player(level1, level1.get_player_vao(), level1.get_current_level());
+		// Update all oranges
+		for (auto& orange : gs.get_current_oranges())
+			update_fruit(orange, gs.get_orange_vao(), orange.get_frame(), 5.0f);
 
-		//update_fruit(level1.get_current_apples()[0], level1.get_apple_vao(), level1.get_current_apples()[0].get_frame());
+		//update_angry_block(gs.get_current_angry_blocks()[0], gs.get_angry_block_vao(), gs.get_current_angry_blocks()[0].get_blink_frame());
+		update_player(gs, gs.get_player_vao(), gs.get_current_level());
+
+		//update_fruit(gs.get_current_apples()[0], gs.get_apple_vao(), gs.get_current_apples()[0].get_frame());
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwSwapBuffers(window.getWindow());
 		glfwPollEvents();
 		update_dt();
-		level_displacement = level1.get_current_level().get_tile_displacement_x();
+		level_displacement = gs.get_current_level().get_tile_displacement_x();
 	}
 }
 void Game::processInput(Level& level)
@@ -387,7 +431,7 @@ void Game::do_y_collisions(GameState& gs, Level& level)
 	for (auto& angryblock : gs.get_current_angry_blocks())
 	{
 		
-		if (Physics::is_collision_player_entity_f(player, angryblock, 0.0f, 0.0f, -12.0f, 0.0f) && player.is_falling())
+		if (Physics::is_collision_player_entity_f(player, angryblock, 0.0f, 0.0f, -15.0f, 0.0f) && player.is_falling())
 		{
 			cancollideleftrightlol = false;
 			player.set_can_move_down(false);
@@ -464,6 +508,34 @@ void Game::update_tiles(Level& level, VertexArray& background_vao, VertexArray& 
 	}
 }
 
+void Game::update_slime(Slime& slime, VertexArray& slime_vao, float& frame)
+{
+	if (slime.getXVelocity() > 0)
+		shader.setUniform1f("facing_right", 0.0f);	// Invert sprite texture if moving right
+	else shader.setUniform1f("facing_right", 1.0f); // Invert sprite texture if moving left
+	shader.setUniform1f("currentTex", 7.0f);		// Select the correct texture slot in the fragment shader
+
+	slime.move(dt);									// What could this function do??? Very cryptic......
+	do_slime_move_animation(10, slime.get_current_walk_frame(), 0.1);	// update the slimes frames. Slime texture atlas has a total of 15 frames
+
+	//playerView = glm::scale(glm::mat4(1.0f), glm::vec3(-1.0f, 1.0f, 1.0f)) * glm::translate(model, glm::vec3(slime.getX() + level_displacement, slime.getY(), 0.0f));;
+	playerView = glm::translate(model, glm::vec3(slime.getX() + level_displacement, slime.getY(), 0.0f)); // Translate the view matrix based on slime position and level displacement (to accomodate scrolling)
+	
+	MVP_Scene = model * proj * playerView; 			// Compose the MVP with the new view matrix
+	shader.setUniformMat4f("u_MVP", MVP_Scene);		// Send the new MVP matrix to the vertex shader to update position
+
+	renderer.draw(slime_vao, shader);				// Finally, draw the slime
+}
+void Game::do_slime_move_animation(int frames, float& counter, float textureStride)
+{
+	counter += dt * .7;		// update the frame counter
+	if ((int)counter > frames )	// When counter gets bigger than the current number of frames, reset it to 0
+		counter = 0.0f;
+	shader.setUniform1f("u_xTextureOffset", (float)(int)counter * textureStride);	// Calculate the texture offset (between frames in the texture atlas), then send it to the vertex shader
+	shader.setUniform1f("u_xInverseOffset", 0);	// No inverse offset 
+	shader.setUniform1f("u_yTextureOffset", 0); // No y offset
+}
+
 void Game::update_pig(Pig& pig, VertexArray& pig_vao, Fruit& fruit, float& walk_frame, float& run_frame)
 {
 	if (pig.getXVelocity() > 0)
@@ -504,7 +576,7 @@ void Game::do_pig_run_animation(int frames, float& runCounter, float xTexStride,
 	shader.setUniform1f("u_yTextureOffset", yTexStride);
 	if ((int)runCounter > frames)
 		runCounter = 0.0f;
-	shader.setUniform1f("u_xTextureOffset", ((float)((int)runCounter)) * xTexStride);
+	shader.setUniform1f("u_xTextureOffset", (((int)runCounter)) * xTexStride);
 }
 
 void Game::update_fruit(Fruit& fruit, VertexArray& fruit_vao, float& frame, float textureSlot)

@@ -7,6 +7,16 @@ AngryBlock::AngryBlock(float in_x, float in_y, float in_w, float in_h)
 	yVel = 15.0f;
 }
 
+AngryBlock::AngryBlock(float in_x, float in_y, float in_w, float in_h, float in_downTime, float in_moveTime)
+	:
+	Entity(in_x, in_y, in_w, in_h)
+{
+	xVel = 0.0f;
+	yVel = 15.0f;
+	downTime = in_downTime;
+	moveTime = in_moveTime;
+}
+
 void AngryBlock::moveY(float dt)
 {
 	y += yVel * dt * (float)direction;
@@ -15,18 +25,18 @@ void AngryBlock::moveY(float dt)
 void AngryBlock::update_timer(float dt)
 {
 	// Movement 
-	if (moveTimer >= 0 && moveTimer <= 15.0f) {		
+	if (moveTimer >= 0 && moveTimer <= moveTime) {		
 		direction = 1;		// If time between this window, rock dude will move up (sign is positive)
 	}
-	else if (moveTimer >= 25.0f && moveTimer <= 40.0f)
+	else if (moveTimer >= (moveTime + downTime) && moveTimer <= (moveTime * 2 + downTime))
 	{
 		direction = -1;		// If time is between this window, rock dude will move down (sign is negative)
 	}
 	else direction = 0;		// If time not within window, rock dude will stop 
 
-	if (moveTimer >= 50.0f)					
+	if (moveTimer >= (moveTime * 2 + downTime * 2))					
 	{
-		moveTimer = 0.0f;	// Reset timer after reaching max time
+		moveTimer = 0.0f;	// Reset timer after reaching max time (One full cycle)
 	}
 	moveTimer += dt;
 

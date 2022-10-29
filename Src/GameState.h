@@ -16,6 +16,7 @@
 #include "Pig.h"
 #include "Fruit.h"
 #include "AngryBlock.h"
+#include "Slime.h"
 #include "Button.h"
 
 class GameState
@@ -31,6 +32,7 @@ public:
 	std::vector<Fruit>& get_current_apples() { return v_Apples; }
 	std::vector<Fruit>& get_current_oranges() { return v_Oranges; }
 	std::vector<AngryBlock>& get_current_angry_blocks() { return v_AngryBlocks; }
+	std::vector<Slime>& get_current_slimes() { return v_Slimes; }
 	std::vector<Button>& get_current_buttons() { return v_Buttons; }
 
 	Player& get_current_player() { return player; }
@@ -41,7 +43,9 @@ public:
 	VertexArray& get_pig_vao() { return VAOPig; }
 	VertexArray& get_apple_vao() { return VAOApple; }
 	VertexArray& get_orange_vao() { return VAOOrange; }
-	VertexArray& get_angry_block_vao() { return VAOABlock; }
+	VertexArray& get_angry_block_vao() { return VAOSlime; }
+	VertexArray& get_slime_vao() { return VAOSlime; }
+
 	std::vector<VertexArray>& get_current_button_vaos() { return v_VAOButtons; }
 
 	unsigned int get_current_game_state() const { return current_state; }
@@ -65,9 +69,9 @@ private:
 	std::vector<Fruit> v_Oranges;
 	std::vector<Pig> v_Pigs;
 	std::vector<AngryBlock> v_AngryBlocks;
+	std::vector<Slime> v_Slimes;
 
 	std::vector<Button> v_Buttons;
-
 	std::vector<VertexArray> v_VAOButtons;
 
 	VertexArray VAOPlayer;
@@ -77,7 +81,7 @@ private:
 	VertexArray VAOApple;
 	VertexArray VAOOrange;
 	VertexArray VAOABlock;
-	
+	VertexArray VAOSlime;
 
 	Texture playerTexture;
 	Texture backgroundTexture;
@@ -86,6 +90,7 @@ private:
 	Texture appleTexture;
 	Texture orangeTexture;
 	Texture angryBlockTexture;
+	Texture slimeTexture;
 
 	float playerVert[20];
 	float backgroundVert[20];
@@ -95,6 +100,8 @@ private:
 	float orangeVert[20];
 	float aBlockVert[20];
 	float buttonVert[20];
+	float slimeVert[20];
+
 
 	glm::mat4 MVP;
 	glm::mat4 view;
@@ -103,26 +110,44 @@ private:
 
 	void load_game_over();
 	void load_level_1();
+	void load_level_2();
 	void load_main_menu();
 
 	void init_vertices(Entity& e, VertexArray& e_VAO, float(&vert)[20], float x, float y, float tex_left, float tex_bottom, float tex_width, float tex_height);
 	void init_vertices(Fruit& f, VertexArray& e_VAO, float(&vert)[20], float x, float y, float tex_left, float tex_bottom, float tex_width, float tex_height);
 	void init_vertices(Button& b, VertexArray& b_VAO, float(&vert)[20], float x, float y, float tex_left, float tex_bottom, float tex_width, float tex_height);
 	
+	
+
 	std::vector<char> level1 = {
 		//   1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20 
-			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', //1 
-			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', // 1
-			'X', 'X', 'X', '-', '-', '-', '-', 'X', 'X', 'X', 'X', 'X', 'X', 'X', '-', '-', '-', '-', '-', '-', // 3
-			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 4
-			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 5
-			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 6
-			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 7
-			'-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', 'X', '-', '-', '-', 'X', 'X', 'X', '-', '-', // 8
-			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', // 9
-			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 10
-			'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 11
-			'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', // 12
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 1 
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 2
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 3
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 4
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 5
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 6
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 7
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 8
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', 'X', 'X', 'X', 'X', 'X', '-', '-', '-', '-', // 9
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 10
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 11
+		'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', // 12
+	};
+	std::vector<char> level2 = {
+		//   1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20 
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', // 1 
+		'-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', // 2
+		'-', '-', '-', '-', '-', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', '-', '-', '-', '-', '-', '-', // 3
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 4
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 5
+		'-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 6
+		'-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 7
+		'-', '-', '-', '-', 'X', '-', '-', '-', 'X', '-', '-', 'X', '-', '-', '-', 'X', 'X', 'X', '-', '-', // 8
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', // 9
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 10
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 11
+		'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', // 12
 	};
 	unsigned int indices[6] = { 0, 1, 2,  2, 3, 0 };
 };

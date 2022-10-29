@@ -13,37 +13,13 @@ uniform sampler2D u_AppleTexture;
 uniform sampler2D u_OrangeTexture;
 uniform sampler2D u_AngryBlockTexture;
 
-uniform sampler2D u_textures[7];
+uniform sampler2D u_textures[32];
 
 uniform float currentTex = 0.0f;
 
 void main()
 {
 
-    //switch(int(currentTex))
-    //{
-    //case 0:
-    //    color = texture(u_BackgroundTexture, TexCoord);
-    //    break;
-    //case 1:
-    //    color = texture(u_PlayerTexture, TexCoord);
-    //    break;
-    //case 2:
-    //    color = texture(u_PigTexture, TexCoord);
-    //    break;
-    //case 3:
-    //    color = texture(u_AppleTexture, TexCoord);
-    //    break;
-    //case 4:
-    //    color = texture(u_GrassTexture, TexCoord);
-    //    break;
-    //case 5:
-    //    color = texture(u_OrangeTexture, TexCoord);
-    //    break;
-    //case 6:
-    //    color = texture(u_AngryBlockTexture, TexCoord);
-    //    break;
-    //}
     switch(int(currentTex))
     {
     case 0:
@@ -67,7 +43,15 @@ void main()
     case 6:
         color = texture(u_textures[6], TexCoord);
         break;
-    
+    case 7:
+        color = texture(u_textures[7], TexCoord);
+        break;
+    case 8:
+        color = texture(u_textures[8], TexCoord);
+        break;
+    case 9:
+        color = texture(u_textures[9], TexCoord);
+        break;
     }
     
 }

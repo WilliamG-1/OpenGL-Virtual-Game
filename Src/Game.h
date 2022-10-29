@@ -14,6 +14,7 @@
 #include "Pig.h"
 #include "Physics.h"
 #include "Fruit.h"
+#include "Slime.h"
 enum class ArrayType {
 	VERTEX = 0, ELEMENT
 };
@@ -91,15 +92,16 @@ private:
 
 	void composeFrame();
 	void render_level1();
+	void render_level2();
+	void render_level3();
 	void render_main_menu();
 
 
 	void init_player_textures(float offset);
-	void init_enemy_texture(VertexArray& enemy_vao, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkingVector, std::vector<std::unique_ptr<Texture>>& runningVector, unsigned int idleFrames, unsigned int walkingFrames, unsigned int runningFrames, const std::string& idlePath, const std::string& walkPath, const std::string& runningPath);
-	void init_fruit_texture(VertexArray& fruit_vao, std::vector<std::unique_ptr<Texture>>& fruitVector, unsigned int spriteCount, const std::string& path);
+	
 	void init_vertices(Entity& e, VertexArray& e_VAO, float (&vert)[20],float x, float y, float texture_x, float texture_y, float tex_right, float tex_top);
 	void init_vertices(Fruit& f, VertexArray& e_VAO, float(&vert)[20], float x, float y, float texture_x, float texture_y, float tex_right, float tex_top);
-	void buffer_next_frame(VertexArray& vao, Texture& texture, float(&vert)[20], float space = 11 / 384);
+	
 
 	void update_player(GameState& gs, VertexArray& player_vao, Level& level);
 	void do_player_entity_collisions();
@@ -116,7 +118,14 @@ private:
 	void update_angry_block(AngryBlock& angryBlock, VertexArray& ablock_vao, float& frame);
 	void update_ablock_animations(int frames, float& counter, float xTextureStride);
 
+	void update_slime(Slime& slime, VertexArray& slime_vao, float& frame);
+	void do_slime_move_animation(int frames, float& counter, float textureStride);
 
+
+	// Old Stuff Lol
+	void buffer_next_frame(VertexArray& vao, Texture& texture, float(&vert)[20], float space = 11 / 384);
+	void init_enemy_texture(VertexArray& enemy_vao, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkingVector, std::vector<std::unique_ptr<Texture>>& runningVector, unsigned int idleFrames, unsigned int walkingFrames, unsigned int runningFrames, const std::string& idlePath, const std::string& walkPath, const std::string& runningPath);
+	void init_fruit_texture(VertexArray& fruit_vao, std::vector<std::unique_ptr<Texture>>& fruitVector, unsigned int spriteCount, const std::string& path);
 	void update_tiles(Level& level, VertexArray& background_vao, VertexArray& grass_vao);
 
 	void update_pig(Pig& pig, VertexArray& pig_vao, Fruit& fruit, float& walk_frame, float& run_frame);
