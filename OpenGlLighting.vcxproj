@@ -231,6 +231,8 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Heart.png" />
+    <Image Include="Assets\Virtual Guy\Fall.png" />
+    <Image Include="icon1.ico" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="OpenGlLighting1.rc" />

@@ -266,6 +266,12 @@
     <Image Include="Assets\Heart.png">
       <Filter>Resource Files\Assets</Filter>
     </Image>
+    <Image Include="Assets\Virtual Guy\Fall.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="OpenGlLighting1.rc">
