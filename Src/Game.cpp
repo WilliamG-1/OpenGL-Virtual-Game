@@ -663,7 +663,6 @@ void Game::update_ablock_animations(int frames, float& counter, float xTextureSt
 
 void Game::update_trophy(Trophy& trophy, VertexArray& trophy_vao)
 {
-	std::printf("Trophy: (%.2f, %.2f)", trophy.getX(), trophy.getY());
 	if (Physics::is_collision_player_entity_f(player, trophy, 10.0f, 25.0f, 10.0f, 0.0f))
 	{
 		do_win_animation(trophy);
