@@ -13,7 +13,8 @@ GameState::GameState(Shader& shader)
 	appleTexture("Assets/Items/Fruits/Apple.png"),
 	orangeTexture("Assets/Items/Fruits/Orange.png"),
 	angryBlockTexture("Assets/Traps/Rock Head/AngryBlock.png"),
-	slimeTexture("Assets/Enemies/Slime/a_Slime.png")
+	slimeTexture("Assets/Enemies/Slime/a_Slime.png"),
+	trophyTexture("Assets/Items/Checkpoints/End/Trophy.png")
 {
 
 	shader.setUniform1i("u_textures[0]", 0);
@@ -24,6 +25,9 @@ GameState::GameState(Shader& shader)
 	shader.setUniform1i("u_textures[5]", 5);
 	shader.setUniform1i("u_textures[6]", 6);
 	shader.setUniform1i("u_textures[7]", 7);
+	shader.setUniform1i("u_textures[15]", 15);
+
+
 	shader.setUniform1f("facing_right", 1.0f);
 }
 
@@ -58,11 +62,18 @@ void GameState::load_main_menu()
 
 void GameState::load_level_1()
 {
+	trophy_ptr = std::make_shared<Trophy>(868, 450.0f, 120.0f, 120.0f);
+
 	c_level.init_level_layout(level1);
-	v_Slimes.push_back(Slime(300.0f, 64.0f, 93.87, 64.0f));
-	for (int i = 0; i < 10; i++) v_Oranges.push_back(Fruit(400 + i * 44.04, 64.0f, 44.0f, 44.0f));
-	for (int i = 0; i < 7; i++) v_Oranges.push_back(Fruit(640 + i * 44.04, 256, 44.0f, 44.0f));
-	v_Oranges.push_back(Fruit(1150, 64, 44, 44));
+	v_Slimes.push_back(Slime(300.0f, 64.0f, 93.87, 64.0f, true));
+	for (int i = 0; i < 10; i++) {
+		v_Oranges.push_back(Fruit(400 + i * 44.04, 64.0f, 44.0f, 44.0f)); fruit_count++;
+	}
+	for (int i = 0; i < 7; i++) {
+		v_Oranges.push_back(Fruit(390.0f + i * 44.04, 450.0f, 44.0f, 44.0f)); fruit_count++;
+	}
+	
+
 	// Load Background
 	init_vertices(box, VAOBackground, backgroundVert, 0.0f, 704.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 	backgroundTexture.init();
@@ -77,6 +88,7 @@ void GameState::load_level_1()
 	init_vertices(player, VAOPlayer, playerVert, 0.0f, 0.0f, 0.0104f, 0.67f, 0.0625f, 0.28f);
 	playerTexture.init();
 	playerTexture.setVertAttribs(1, 2, 5, 3);
+
 	// Oranges
 	init_vertices(v_Oranges[0], VAOOrange, orangeVert, 0.0f, 0.0f, 0.00925f, 0.2222f, 0.039f, 0.625f);
 	orangeTexture.init();
@@ -87,35 +99,50 @@ void GameState::load_level_1()
 	slimeTexture.init();
 	slimeTexture.setVertAttribs(1, 2, 5, 3);
 
+	// Load Trophy
+	init_vertices(*trophy_ptr, VAOTrophy, trophyVert, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	trophyTexture.init();
+	trophyTexture.setVertAttribs(1, 2, 5, 3);
+
 	backgroundTexture.bind();
 	playerTexture.bind(1);
 	grassTexture.bind(4);
 	orangeTexture.bind(5);
+	angryBlockTexture.bind(6);
 	slimeTexture.bind(7);
+	trophyTexture.bind(15);
 }
 void GameState::load_level_2()
 {
 	
 	c_level.init_level_layout(level2);
-
+	trophy_ptr = std::make_shared<Trophy>(995, 640.0f, 120.0f, 120.0f);
 	v_AngryBlocks.push_back(AngryBlock(320.0f, 200.0f, 98.0f, 98.0f));
 	v_AngryBlocks.push_back(AngryBlock(64.0f, 170.0f, 98.0f, 98.0f, 12.0f, 25.0f));
 
 	v_Apples.push_back(Fruit(1212.0f, 450, 72.0f, 72.0f));
-	
+	fruit_count++;
+	for (int i = 0; i < 9; i++)
+	{
+		v_Oranges.push_back(Fruit(380.0f + 44 * i, 640.0f, 44.0f, 44.0f));
+		fruit_count++;
+	}
 	for (int i = 1; i < 20; i++)
 	{
 		v_Oranges.push_back(Fruit(200.0f + 50.0f * i, 64.0f, 44.0f, 44.0f));
+		fruit_count++;
 	}
-	for (int i = 0; i < 5; i++) v_Oranges.push_back(Fruit(76.0f, 280.0f + 44.0f*i, 44.0f, 44.0f));
+	for (int i = 0; i < 5; i++) {
+		v_Oranges.push_back(Fruit(76.0f, 280.0f + 44.0f * i, 44.0f, 44.0f));
+		fruit_count++;
+	}
 	for (int i = 1; i < 9; i++)
 	{
 		float x = 36 - 36 * i;
 		float y = sqrt((256*256 - (x*x)));
-		std::printf("coords: (%.2f, %.2f) \n", x, y);
 		
-		v_Oranges.push_back(Fruit(330.0f + x, 455.0f + y, 44.0f, 44.0f));
-
+		v_Oranges.push_back(Fruit(330.0f + x, 460.0f + y, 44.0f, 44.0f));
+		fruit_count++;
 	}
 	//for (int i = 0; i < 5; i++) v_Oranges.push_back(Fruit(100.0f + 44.0f * i, 640.0f + 10.0f * i, 44.0f, 44.0f));
 	v_Pigs.push_back(Pig(750.0f, 64.0f, 96.0f, 80.0f));
@@ -156,6 +183,11 @@ void GameState::load_level_2()
 	angryBlockTexture.init();
 	angryBlockTexture.setVertAttribs(1, 2, 5, 3);
 	
+	// Load Trophy
+	init_vertices(*trophy_ptr, VAOTrophy, trophyVert, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	trophyTexture.init();
+	trophyTexture.setVertAttribs(1, 2, 5, 3);
+
 	backgroundTexture.bind();
 	playerTexture.bind(1);
 	pigTexture.bind(2);
@@ -163,6 +195,7 @@ void GameState::load_level_2()
 	grassTexture.bind(4);	
 	orangeTexture.bind(5);
 	angryBlockTexture.bind(6);
+	trophyTexture.bind(15);
 }
 
 

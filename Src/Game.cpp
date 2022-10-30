@@ -3,6 +3,7 @@
 #include <iomanip>
 #define WIDNOW_WIDTH = 1024.0F
 #define WINDOW_HEIGHT = 768.0F
+unsigned int LEVEL_MAX = 2;
 int gameLevel = 0;
 bool gameRunning = true;
 
@@ -128,7 +129,6 @@ void Game::render_level1()
 	gs.get_current_level().init_grass_tiles(768.0f);
 	board = gs.get_current_level().get_board();
 	composeFrame();
-	//update_player(gs, gs.get_player_vao(), gs.get_current_level());
 
 	while (gameLevel == 1)
 	{
@@ -142,7 +142,11 @@ void Game::render_level1()
 			update_slime(slime, gs.get_slime_vao(), slime.get_current_walk_frame());
 
 		for (Fruit& fruit : gs.get_current_oranges())
-			update_fruit(fruit, gs.get_orange_vao(), fruit.get_frame(), 5);
+			update_fruit(fruit, gs.get_orange_vao(), fruit.get_frame(), 5, gs);
+
+		if (gs.get_fruit_count() == 0)
+			update_trophy(gs.get_current_trophy(), gs.get_trophy_vao());
+		
 		update_player(gs, gs.get_player_vao(), gs.get_current_level());
 
 		glfwSwapBuffers(window.getWindow());
@@ -199,13 +203,14 @@ void Game::render_level2()
 		
 		// Update all apples
 		for (auto& apple : gs.get_current_apples())
-			update_fruit(apple, gs.get_apple_vao(), apple.get_frame(), 3.0f);
+			update_fruit(apple, gs.get_apple_vao(), apple.get_frame(), 3.0f, gs);
 
 		// Update all oranges
 		for (auto& orange : gs.get_current_oranges())
-			update_fruit(orange, gs.get_orange_vao(), orange.get_frame(), 5.0f);
+			update_fruit(orange, gs.get_orange_vao(), orange.get_frame(), 5.0f, gs);
 
-		//update_angry_block(gs.get_current_angry_blocks()[0], gs.get_angry_block_vao(), gs.get_current_angry_blocks()[0].get_blink_frame());
+		if (gs.get_fruit_count() == 0)
+			update_trophy(gs.get_current_trophy(), gs.get_trophy_vao());
 		update_player(gs, gs.get_player_vao(), gs.get_current_level());
 
 		//update_fruit(gs.get_current_apples()[0], gs.get_apple_vao(), gs.get_current_apples()[0].get_frame());
@@ -333,8 +338,10 @@ void Game::update_player(GameState& gs, VertexArray& player_vao, Level& level)
 	processInput(level);
 	shader.setUniformMat4f("u_MVP", MVP_Player);
 	shader.setUniform1f("currentTex", 1.0f);
+
 	if (player.getVx() == 0) do_player_idle_animation(10, a_playerFrames[0], 0.0833, 0.08f);
 	else do_player_running_animation(11, a_playerFrames[1], 0.0833f, 0.325f);
+
 	renderer.draw(player_vao, shader);
 
 }
@@ -579,15 +586,17 @@ void Game::do_pig_run_animation(int frames, float& runCounter, float xTexStride,
 	shader.setUniform1f("u_xTextureOffset", (((int)runCounter)) * xTexStride);
 }
 
-void Game::update_fruit(Fruit& fruit, VertexArray& fruit_vao, float& frame, float textureSlot)
+void Game::update_fruit(Fruit& fruit, VertexArray& fruit_vao, float& frame, float textureSlot, GameState& gs)
 {
 	
 	if (!fruit.is_collected())
 	{
 		staticViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(fruit.getX() + level_displacement, fruit.getY(), 0.0f));
 		shader.setUniform1f("facing_right", 1.0f);
-		if (Physics::is_collision_player_fruit(player, fruit))
+		if (Physics::is_collision_player_fruit(player, fruit)) {
 			fruit.collect();
+			gs.decrease_fruit_count();
+		}
 		if (!fruit.is_collected())
 		{
 			MVP_Scene = glm::mat4(1.0f) * proj * (staticViewMatrix);
@@ -626,11 +635,48 @@ void Game::update_angry_block(AngryBlock& angryBlock, VertexArray& ablock_vao, f
 }
 void Game::update_ablock_animations(int frames, float& counter, float xTextureStride)
 {
-
-	shader.setUniform1f("u_xTextureOffset", (float)(int)counter * (0.15238 + 0.04761));
-
+	shader.setUniform1f("u_xTextureOffset", (int)counter * (0.15238 + 0.04761));
 }
 
+void Game::update_trophy(Trophy& trophy, VertexArray& trophy_vao)
+{
+	if (Physics::is_collision_player_entity_a(player, trophy))
+	{
+		do_win_animation(trophy);
+	}
+	shader.setUniform1f("u_xTextureOffset", 0.0f);
+	shader.setUniform1f("u_yTextureOffset", 0.0f);
+	shader.setUniform1f("u_xInverseOffset", 0.0f);
+	shader.setUniform1f("facing_right", 1.0f);
+	shader.setUniform1f("currentTex", 15);
+	trophy.move(dt);
+	playerView = glm::translate(model, glm::vec3(trophy.getX() + level_displacement, trophy.getY(), 0.0f));
+	MVP_Scene = model * proj * playerView;
+	shader.setUniformMat4f("u_MVP", MVP_Scene);
+	renderer.draw(trophy_vao, shader);
+}
+
+void Game::do_win_animation(Trophy& trophy)
+{
+	winStateTimer += dt;
+	player.setVx(0);
+	player.setVy(-20);
+	if (player.getY() < trophy.get_initial_y())
+		player.setY(trophy.get_initial_y());
+	
+	trophy.collection_move(dt);
+	if (winStateTimer >= 15)
+	{
+		if (gameLevel == LEVEL_MAX)
+		{
+			gameLevel = 0;
+		}
+		else {
+			gameLevel++;
+		}
+		
+	}
+}
 // Old Stuff
 void Game::init_player_textures(float offset)
 {

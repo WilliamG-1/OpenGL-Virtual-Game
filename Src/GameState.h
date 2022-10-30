@@ -18,7 +18,7 @@
 #include "AngryBlock.h"
 #include "Slime.h"
 #include "Button.h"
-
+#include "Trophy.h"
 class GameState
 {
 public:
@@ -36,21 +36,21 @@ public:
 	std::vector<Button>& get_current_buttons() { return v_Buttons; }
 
 	Player& get_current_player() { return player; }
-
+	Trophy& get_current_trophy() { return *trophy_ptr; }
 	VertexArray& get_player_vao() { return VAOPlayer; }
 	VertexArray& get_background_vao() { return VAOBackground; }
 	VertexArray& get_grass_vao() { return VAOGrass; }
 	VertexArray& get_pig_vao() { return VAOPig; }
 	VertexArray& get_apple_vao() { return VAOApple; }
 	VertexArray& get_orange_vao() { return VAOOrange; }
-	VertexArray& get_angry_block_vao() { return VAOSlime; }
+	VertexArray& get_angry_block_vao() { return VAOABlock; }
 	VertexArray& get_slime_vao() { return VAOSlime; }
-
+	VertexArray& get_trophy_vao() { return VAOTrophy; }
 	std::vector<VertexArray>& get_current_button_vaos() { return v_VAOButtons; }
 
 	unsigned int get_current_game_state() const { return current_state; }
-
-
+	void decrease_fruit_count() { fruit_count--; }
+	unsigned int get_fruit_count() const { return fruit_count; }
 private:
 	Shader shader;
 	Level c_level;
@@ -59,10 +59,12 @@ private:
 	unsigned int level_1;
 	unsigned int level_2;
 
+	unsigned int fruit_count = 0;
+
 	Player player;
 	Entity box;
 	Tile backgroundTile;
-	
+	std::shared_ptr<Trophy> trophy_ptr;
 
 	std::vector<Tile> v_GrassTiles;
 	std::vector<Fruit> v_Apples;
@@ -82,6 +84,7 @@ private:
 	VertexArray VAOOrange;
 	VertexArray VAOABlock;
 	VertexArray VAOSlime;
+	VertexArray VAOTrophy;
 
 	Texture playerTexture;
 	Texture backgroundTexture;
@@ -91,6 +94,7 @@ private:
 	Texture orangeTexture;
 	Texture angryBlockTexture;
 	Texture slimeTexture;
+	Texture trophyTexture;
 
 	float playerVert[20];
 	float backgroundVert[20];
@@ -101,7 +105,7 @@ private:
 	float aBlockVert[20];
 	float buttonVert[20];
 	float slimeVert[20];
-
+	float trophyVert[20];
 
 	glm::mat4 MVP;
 	glm::mat4 view;
@@ -126,19 +130,19 @@ private:
 		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 3
 		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 4
 		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 5
-		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 6
-		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 7
+		'-', '-', '-', '-', '-', '-', 'X', 'X', 'X', 'X', 'X', '-', '-', '-', 'X', '-', '-', '-', '-', '-', // 6
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', // 7
 		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 8
-		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', 'X', 'X', 'X', 'X', 'X', '-', '-', '-', '-', // 9
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', '-', // 9
 		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 10
 		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 11
 		'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', // 12
 	};
 	std::vector<char> level2 = {
 		//   1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20 
-		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', // 1 
-		'-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', // 2
-		'-', '-', '-', '-', '-', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', '-', '-', '-', '-', '-', '-', // 3
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 1 
+		'-', '-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 2
+		'-', '-', '-', '-', '-', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', '-', '-', 'X', '-', '-', '-', // 3
 		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 4
 		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 5
 		'-', '-', '-', '-', 'X', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 6

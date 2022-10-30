@@ -51,7 +51,11 @@ void main()
         break;
     case 9:
         color = texture(u_textures[9], TexCoord);
+        break;  
+    case 15:
+        color = texture(u_textures[15], TexCoord);
         break;
+   
     }
     
 }

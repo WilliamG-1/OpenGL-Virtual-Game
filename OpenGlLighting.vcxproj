@@ -174,6 +174,7 @@
     <ClCompile Include="Src\Texture.cpp" />
     <ClCompile Include="Src\TextureOffestConverter.cpp" />
     <ClCompile Include="Src\Tile.cpp" />
+    <ClCompile Include="Src\Trophy.cpp" />
     <ClCompile Include="Src\VertexArray.cpp" />
     <ClCompile Include="Src\VertexBuffer.cpp" />
     <ClCompile Include="Src\Window.cpp" />

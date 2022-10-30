@@ -15,6 +15,9 @@
 #include "Physics.h"
 #include "Fruit.h"
 #include "Slime.h"
+#include "Trophy.h"
+
+
 enum class ArrayType {
 	VERTEX = 0, ELEMENT
 };
@@ -41,7 +44,6 @@ private:
 	Player player;
 	Entity box;
 
-	float pigCurrentFrame = 0.0f;
 	
 	float dt;
 	float currentTime = 0.0f;
@@ -68,7 +70,7 @@ private:
 	float rightBound = (screenWidth / 2) + (screenWidth / 2) * 0.1;// Right threshold
 	float level_displacement = 0.0f;
 
-	
+	float winStateTimer = 0.0f;
 	
 	bool cancollideleftrightlol = true;
 
@@ -112,7 +114,7 @@ private:
 	void do_pig_walk_animation(int frames, float& walkCounter, float textureStride, float yTexStride, float xInverseOffest);
 	void do_pig_run_animation(int frames, float& runCounter, float xTexStride, float yTexStride, float xInverseOffset);
 
-	void update_fruit(Fruit& fruit, VertexArray& vao, float& frame, float textureSlot);
+	void update_fruit(Fruit& fruit, VertexArray& vao, float& frame, float textureSlot, GameState& gs);
 	void do_fruit_animation(int frames, float& counter, float xTextureStride);
 
 	void update_angry_block(AngryBlock& angryBlock, VertexArray& ablock_vao, float& frame);
@@ -121,6 +123,7 @@ private:
 	void update_slime(Slime& slime, VertexArray& slime_vao, float& frame);
 	void do_slime_move_animation(int frames, float& counter, float textureStride);
 
+	void do_win_animation(Trophy& trophy);
 
 	// Old Stuff Lol
 	void buffer_next_frame(VertexArray& vao, Texture& texture, float(&vert)[20], float space = 11 / 384);
@@ -132,7 +135,7 @@ private:
 	void do_pig_animations(Pig& p, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkVector, std::vector<std::unique_ptr<Texture>>& runningVector, float& currentFrame);
 	void do_fruit_animatinos(Fruit& fruit, std::vector<std::unique_ptr<Texture>>& frames, float& currentFrame);
 
-	
+	void update_trophy(Trophy& trophy, VertexArray& trophyVAO);
 
 	void update_texture_frame(float& variable, float dt, float max_value);
 	void update_dt();
