@@ -4,7 +4,7 @@
 GameState::GameState(Shader& shader)
 	:
 	shader(shader),
-	player(1.0f, 72.0f, 60.0f, 60.0f), 
+	//player(1.0f, 72.0f, 60.0f, 60.0f), 
 	box(0.0f, 0.0f, 64.0f, 64.0f),
 	backgroundTexture("Assets/Background/Green.png"),
 	grassTexture("Assets/Tiles/GrassTile.png"),
@@ -14,7 +14,8 @@ GameState::GameState(Shader& shader)
 	orangeTexture("Assets/Items/Fruits/Orange.png"),
 	angryBlockTexture("Assets/Traps/Rock Head/AngryBlock.png"),
 	slimeTexture("Assets/Enemies/Slime/a_Slime.png"),
-	trophyTexture("Assets/Items/Checkpoints/End/Trophy.png")
+	trophyTexture("Assets/Items/Checkpoints/End/Trophy.png"),
+	buttonTexture("Assets/Menu/Buttons/Play.png")
 {
 
 	shader.setUniform1i("u_textures[0]", 0);
@@ -46,23 +47,38 @@ void GameState::load_state()
 	if (current_state == 2)
 		load_level_2();
 }
-
-
 void GameState::load_main_menu()
 {
-	// Play Button
-	v_Buttons.push_back(Button(448.0f, 320.0f, 128.0f, 128.0f, "Assets/Menu/Buttons/Play.png"));
-	v_VAOButtons.push_back(VertexArray());
-	init_vertices(v_Buttons[0], v_VAOButtons[0], buttonVert, v_Buttons[0].getX(), v_Buttons[0].getY(), 0.0f, 0.0f, 1.0f, 1.0f);
-	v_Buttons[0].get_texture().init();
-	v_Buttons[0].get_texture().setVertAttribs(1, 2, 5, 3);
+	
+	c_level.init_level_layout(menu);
+	v_Buttons.push_back(Button(448.0f, 320.0f, 128.0f, 128.0f));
+	player_ptr = std::make_shared<Player>(475.0f, 150.0f, 60.0f, 60.0f);
 
-	v_Buttons[0].get_texture().bind();
+	// Load Background
+	glActiveTexture(GL_TEXTURE0);
+	init_vertices(box, VAOBackground, backgroundVert, 0.0f, 704.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	backgroundTexture.init();
+	backgroundTexture.setVertAttribs(1, 2, 5, 3);
+
+	// Player
+	init_vertices(*player_ptr, VAOPlayer, playerVert, 0.0f, 0.0f, 0.0104f, 0.67f, 0.0625f, 0.28f);
+	glActiveTexture(GL_TEXTURE1);
+	playerTexture.init();
+	playerTexture.setVertAttribs(1, 2, 5, 3);
+
+	// Play Button
+	glActiveTexture(GL_TEXTURE5);
+	init_vertices(v_Buttons[0], VAOButton, buttonVert, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	buttonTexture.init();
+	buttonTexture.setVertAttribs(1, 2, 5, 3);
+
+	
 }
 
 void GameState::load_level_1()
 {
-	trophy_ptr = std::make_shared<Trophy>(868, 450.0f, 120.0f, 120.0f);
+	player_ptr = std::make_shared<Player>(1.0f, 72.0f, 60.0f, 60.0f);
+	trophy_ptr = std::make_shared<Trophy>(868.0f, 450.0f, 120.0f, 120.0f);
 
 	c_level.init_level_layout(level1);
 	v_Slimes.push_back(Slime(300.0f, 64.0f, 93.87, 64.0f, true));
@@ -73,7 +89,6 @@ void GameState::load_level_1()
 		v_Oranges.push_back(Fruit(390.0f + i * 44.04, 450.0f, 44.0f, 44.0f)); fruit_count++;
 	}
 	
-
 	// Load Background
 	init_vertices(box, VAOBackground, backgroundVert, 0.0f, 704.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 	backgroundTexture.init();
@@ -85,7 +100,7 @@ void GameState::load_level_1()
 	grassTexture.setVertAttribs(1, 2, 5, 3);
 
 	// Load Player
-	init_vertices(player, VAOPlayer, playerVert, 0.0f, 0.0f, 0.0104f, 0.67f, 0.0625f, 0.28f);
+	init_vertices(*player_ptr, VAOPlayer, playerVert, 0.0f, 0.0f, 0.0104f, 0.67f, 0.0625f, 0.28f);
 	playerTexture.init();
 	playerTexture.setVertAttribs(1, 2, 5, 3);
 
@@ -114,11 +129,11 @@ void GameState::load_level_1()
 }
 void GameState::load_level_2()
 {
-	
+	player_ptr = std::make_shared<Player>(1.0f, 72.0f, 60.0f, 60.0f);
 	c_level.init_level_layout(level2);
 	trophy_ptr = std::make_shared<Trophy>(995, 640.0f, 120.0f, 120.0f);
 	v_AngryBlocks.push_back(AngryBlock(320.0f, 200.0f, 98.0f, 98.0f));
-	v_AngryBlocks.push_back(AngryBlock(64.0f, 170.0f, 98.0f, 98.0f, 12.0f, 25.0f));
+	v_AngryBlocks.push_back(AngryBlock(64.0f, 170.0f, 98.0f, 98.0f, 14.0f, 24.0f));
 
 	v_Apples.push_back(Fruit(1212.0f, 450, 72.0f, 72.0f));
 	fruit_count++;
@@ -141,7 +156,7 @@ void GameState::load_level_2()
 		float x = 36 - 36 * i;
 		float y = sqrt((256*256 - (x*x)));
 		
-		v_Oranges.push_back(Fruit(330.0f + x, 460.0f + y, 44.0f, 44.0f));
+		v_Oranges.push_back(Fruit(330.0f + x, 490.0f + y, 44.0f, 44.0f));
 		fruit_count++;
 	}
 	//for (int i = 0; i < 5; i++) v_Oranges.push_back(Fruit(100.0f + 44.0f * i, 640.0f + 10.0f * i, 44.0f, 44.0f));
@@ -158,7 +173,7 @@ void GameState::load_level_2()
 	grassTexture.setVertAttribs(1, 2, 5, 3);
 
 	// Load Player
-	init_vertices(player, VAOPlayer, playerVert, 0.0f, 0.0f, 0.0104f, 0.67f, 0.0625f, 0.28f);
+	init_vertices(*player_ptr, VAOPlayer, playerVert, 0.0f, 0.0f, 0.0104f, 0.67f, 0.0625f, 0.28f);
 	playerTexture.init();
 	playerTexture.setVertAttribs(1, 2, 5, 3);
 

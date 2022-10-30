@@ -16,6 +16,8 @@ uniform sampler2D u_AngryBlockTexture;
 uniform sampler2D u_textures[32];
 
 uniform float currentTex = 0.0f;
+uniform float u_Color;
+uniform float u_Opacity;
 
 void main()
 {
@@ -26,7 +28,7 @@ void main()
         color = texture(u_textures[0], TexCoord);
         break;
     case 1:
-        color = texture(u_textures[1], TexCoord);
+        color = texture(u_textures[1], TexCoord) * vec4(u_Color, u_Color, u_Color, u_Opacity);
         break;
     case 2:
         color = texture(u_textures[2], TexCoord);

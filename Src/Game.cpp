@@ -5,6 +5,7 @@
 #define WINDOW_HEIGHT = 768.0F
 unsigned int LEVEL_MAX = 2;
 int gameLevel = 0;
+int resetLevel = 0;
 bool gameRunning = true;
 
 Game::Game()
@@ -47,7 +48,7 @@ Game::Game()
 
 	// Initialize our shader by passing the source code
 	shader.initShaders(vertSource, fragSource);
-
+	
 	// Finally, use our shader program
 	shader.use();
 }
@@ -65,7 +66,8 @@ void Game::run()
 			render_level1();		// Level 1
 		if (gameLevel == 2)
 			render_level2();		// Level 2
-		
+		if (gameLevel == -2)
+			gameLevel = resetLevel;
 	}
 
 	// Destroy stuff
@@ -77,13 +79,9 @@ void Game::run()
 }
 void Game::render_main_menu()
 {
-	
-	shader.setUniform1f("u_xTextureOffset", 0.0f);
-	shader.setUniform1f("u_yTextureOffset", 0.0f);
-	shader.setUniform1f("u_xInverseoffset", 0.0f);
-	shader.setUniform1f("facing_right", 1.0f);
-
+	reset_variables();
 	proj = glm::ortho(0.0f, screenWidth, 0.0f, screenHeight, -1.0f, 1.0f);
+	playerView = glm::mat4(1.0f);
 	view = glm::mat4(1.0f);
 	model = glm::mat4(1.0f);
 	MVP_Scene = model * proj * view;
@@ -91,15 +89,20 @@ void Game::render_main_menu()
 	GameState menu(shader);
 	menu.set_game_state(0);
 	menu.load_state();
+	player = menu.get_current_player();
+	board = menu.get_current_level().get_board();
+	
+	composeFrame();
 	while (gameLevel == 0)
 	{
 		// Clear Screen
 		glClearColor(0.15f, 0.32f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
-
-
-		renderer.draw(menu.get_current_button_vaos()[0], shader);
+		
+		update_tiles(menu.get_current_level(), menu.get_background_vao(), menu.get_grass_vao());		
+		update_button(menu.get_current_buttons()[0], menu.get_current_button_vaos(), 5);
+		update_player(menu, menu.get_player_vao(), menu.get_current_level(), false);
+		
 
 		if (glfwGetKey(window.getWindow(), GLFW_KEY_1) == GLFW_PRESS)
 		{
@@ -121,7 +124,7 @@ void Game::render_main_menu()
 }
 void Game::render_level1()
 {
-	
+	reset_variables();
 	GameState gs(shader);
 	gs.set_game_state(1);
 	gs.load_state();
@@ -134,10 +137,9 @@ void Game::render_level1()
 	{
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
+		
 		update_tiles(gs.get_current_level(), gs.get_background_vao(), gs.get_grass_vao());
 		
-
 		for (Slime& slime : gs.get_current_slimes())
 			update_slime(slime, gs.get_slime_vao(), slime.get_current_walk_frame());
 
@@ -157,7 +159,7 @@ void Game::render_level1()
 }
 void Game::render_level2()
 {
-	
+	reset_variables();
 	GameState gs(shader);
 	gs.set_game_state(2);
 	gs.load_state();
@@ -323,19 +325,31 @@ void Game::composeFrame()
 	shader.setUniformMat4f("u_MVP", MVP_Scene);
 } 
 
-void Game::update_player(GameState& gs, VertexArray& player_vao, Level& level)
+void Game::update_player(GameState& gs, VertexArray& player_vao, Level& level, bool physics)
 {
-	playerView = glm::translate(playerModel, glm::vec3(playerScreenX, player.getY(), 0.0f));
+	if (dead)
+	{
+		do_player_death();
+	}
+	else {
+		playerView = glm::translate(playerModel, glm::vec3(playerScreenX, player.getY(), 0.0f));
+	}
 
-	player.moveX(dt);
-	do_x_collisions(gs, level);
-	player.moveY(dt);
-	do_y_collisions(gs, level);
+
+	if (!dead && physics)
+	{
+		player.moveX(dt);
+		do_x_collisions(gs, level);
+		player.moveY(dt);
+		do_y_collisions(gs, level);
+		if (!win_state)
+			processInput(level);
+	}
 	playerMiddle = (playerScreenX + playerScreenX + player.getWidth()) / 2;
 
 	MVP_Player = playerModel * proj * playerView;
 
-	processInput(level);
+	
 	shader.setUniformMat4f("u_MVP", MVP_Player);
 	shader.setUniform1f("currentTex", 1.0f);
 
@@ -445,7 +459,7 @@ void Game::do_y_collisions(GameState& gs, Level& level)
 			player.setVy(0.0f);
 			player.set_can_jump(true);
 			player.set_can_move_down(false);
-			player.setY(angryblock.getY() + angryblock.getHeight() + 1.0f);
+			player.setY(angryblock.getY() + angryblock.getHeight() + 1.3f);
 		}
 		else cancollideleftrightlol = true;
 		if (Physics::is_collision_player_entity_f(player, angryblock, 0.0f, 0.0f, 0.0f, -9.0f) && player.is_jumping())
@@ -491,7 +505,9 @@ void Game::update_tiles(Level& level, VertexArray& background_vao, VertexArray& 
 	shader.setUniform1f("u_xInverseOffset", 0.0f);
 	shader.setUniform1f("facing_right", 1.0f);
 	shader.setUniformMat4f("u_MVP", MVP_Scene);
-	
+	if (gameLevel == 0)
+		do_tile_animations();
+
 	for (int r = 0; r < level.get_rows(); r++)
 	{
 		for (int c = 0; c < level.get_columns(); c++)
@@ -514,9 +530,14 @@ void Game::update_tiles(Level& level, VertexArray& background_vao, VertexArray& 
 		}
 	}
 }
-
+void Game::do_tile_animations()
+{
+	shader.setUniform1f("u_xTextureOffset", glfwGetTime());
+}
 void Game::update_slime(Slime& slime, VertexArray& slime_vao, float& frame)
 {
+	if (Physics::is_collision_player_entity_f(player, slime, 9.0f, 20.0f, 15.0f, 15.0f))
+		dead = true;
 	if (slime.getXVelocity() > 0)
 		shader.setUniform1f("facing_right", 0.0f);	// Invert sprite texture if moving right
 	else shader.setUniform1f("facing_right", 1.0f); // Invert sprite texture if moving left
@@ -557,6 +578,8 @@ void Game::update_pig(Pig& pig, VertexArray& pig_vao, Fruit& fruit, float& walk_
 		do_pig_walk_animation(14, pig.get_walk_frame(), 0.0625f, 0.0f, 0.05729 + 0.0052f);
 	}
 	else {
+		if (Physics::is_collision_player_entity_f(player, pig, 9.0f, 20.0f, 15.0f, 15.0f))
+			dead = true;
 		do_pig_run_animation(10, pig.get_run_frame(), 0.0625f, 0.25f, 5 * (0.05729 + 0.0052f));
 	}
 
@@ -640,9 +663,11 @@ void Game::update_ablock_animations(int frames, float& counter, float xTextureSt
 
 void Game::update_trophy(Trophy& trophy, VertexArray& trophy_vao)
 {
-	if (Physics::is_collision_player_entity_a(player, trophy))
+	std::printf("Trophy: (%.2f, %.2f)", trophy.getX(), trophy.getY());
+	if (Physics::is_collision_player_entity_f(player, trophy, 10.0f, 25.0f, 10.0f, 0.0f))
 	{
 		do_win_animation(trophy);
+		win_state = true;
 	}
 	shader.setUniform1f("u_xTextureOffset", 0.0f);
 	shader.setUniform1f("u_yTextureOffset", 0.0f);
@@ -658,6 +683,7 @@ void Game::update_trophy(Trophy& trophy, VertexArray& trophy_vao)
 
 void Game::do_win_animation(Trophy& trophy)
 {
+	//win_state = true;
 	winStateTimer += dt;
 	player.setVx(0);
 	player.setVy(-20);
@@ -676,6 +702,64 @@ void Game::do_win_animation(Trophy& trophy)
 		}
 		
 	}
+}
+void Game::do_player_death()
+{
+	player.setVx(0);
+	player.setVy(0);
+	deathStateTimer += dt;
+	rotate_amount += 0.05;
+	if (rotate_amount >= 4) rotate_amount == 1;
+	if (deathColor <= 0.0f)
+	{
+		deathColor = 0.0f;
+		opacityValue -= dt * .15f;
+		shader.setUniform1f("u_Opacity", opacityValue);
+	}
+	else {
+		deathColor -= dt * 0.4f;
+		shader.setUniform1f("u_Color", deathColor);
+	}
+	if (deathStateTimer >= 15.0f)
+	{
+		resetLevel = gameLevel;
+		gameLevel = -2;
+	}
+		
+	playerView = glm::translate(playerModel, glm::vec3(playerScreenX, player.getY(), 0.0f))// * glm::rotate(glm::mat4(1.0f), (float)3.14159/2 * (float)(int)rotate_amount , glm::vec3(1.0f, 0.0f, 0.0f))
+		* glm::scale(glm::mat4(1.0f), glm::vec3(opacityValue, opacityValue, 0.0f));
+		
+
+}
+void Game::reset_variables()
+{
+	rotate_amount = 0.0f;
+	dead = false;
+	win_state = false;
+	winStateTimer = 0.0f;
+	deathStateTimer = 0.0f;
+	deathColor = 1.0f;
+	opacityValue = 1.0f;
+	shader.setUniform1f("u_Color", 1.0f);
+	shader.setUniform1f("u_Opacity", 1.0f);
+	shader.setUniform1f("u_xTextureOffset", 0.0f);
+	shader.setUniform1f("u_yTextureOffset", 0.0f);
+	shader.setUniform1f("u_xInverseoffset", 0.0f);
+	shader.setUniform1f("facing_right", 1.0f);
+}
+void Game::update_button(Button& button, VertexArray& button_vao, float textureSlot)
+{
+	shader.setUniform1f("u_xTextureOffset", 0.0f);
+	shader.setUniform1f("u_yTextureOffset", 0.0f);
+	shader.setUniform1f("u_xInverseOffset", 0.0f);
+	shader.setUniform1f("facing_right", 1.0f);
+	shader.setUniform1f("currentTex", textureSlot);
+	
+	playerView = glm::translate(glm::mat4(1.0f), glm::vec3(button.getX(), button.getY(), 0.0f));
+	
+	MVP_Scene = model * proj * playerView;
+	shader.setUniformMat4f("u_MVP", MVP_Scene);
+	renderer.draw(button_vao, shader);
 }
 // Old Stuff
 void Game::init_player_textures(float offset)

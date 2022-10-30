@@ -35,7 +35,7 @@ public:
 	std::vector<Slime>& get_current_slimes() { return v_Slimes; }
 	std::vector<Button>& get_current_buttons() { return v_Buttons; }
 
-	Player& get_current_player() { return player; }
+	Player& get_current_player() { return *player_ptr; }
 	Trophy& get_current_trophy() { return *trophy_ptr; }
 	VertexArray& get_player_vao() { return VAOPlayer; }
 	VertexArray& get_background_vao() { return VAOBackground; }
@@ -46,12 +46,13 @@ public:
 	VertexArray& get_angry_block_vao() { return VAOABlock; }
 	VertexArray& get_slime_vao() { return VAOSlime; }
 	VertexArray& get_trophy_vao() { return VAOTrophy; }
-	std::vector<VertexArray>& get_current_button_vaos() { return v_VAOButtons; }
+	VertexArray& get_current_button_vaos() { return VAOButton; }
 
 	unsigned int get_current_game_state() const { return current_state; }
 	void decrease_fruit_count() { fruit_count--; }
 	unsigned int get_fruit_count() const { return fruit_count; }
 private:
+	
 	Shader shader;
 	Level c_level;
 	unsigned int current_state;
@@ -61,20 +62,18 @@ private:
 
 	unsigned int fruit_count = 0;
 
-	Player player;
+	//Player player;
 	Entity box;
 	Tile backgroundTile;
 	std::shared_ptr<Trophy> trophy_ptr;
-
+	std::shared_ptr<Player> player_ptr;
 	std::vector<Tile> v_GrassTiles;
 	std::vector<Fruit> v_Apples;
 	std::vector<Fruit> v_Oranges;
 	std::vector<Pig> v_Pigs;
 	std::vector<AngryBlock> v_AngryBlocks;
 	std::vector<Slime> v_Slimes;
-
 	std::vector<Button> v_Buttons;
-	std::vector<VertexArray> v_VAOButtons;
 
 	VertexArray VAOPlayer;
 	VertexArray VAOBackground;
@@ -85,6 +84,8 @@ private:
 	VertexArray VAOABlock;
 	VertexArray VAOSlime;
 	VertexArray VAOTrophy;
+	VertexArray VAOButton;
+	
 
 	Texture playerTexture;
 	Texture backgroundTexture;
@@ -95,7 +96,9 @@ private:
 	Texture angryBlockTexture;
 	Texture slimeTexture;
 	Texture trophyTexture;
-
+	Texture buttonTexture;
+	
+	
 	float playerVert[20];
 	float backgroundVert[20];
 	float grassVert[20];
@@ -122,7 +125,21 @@ private:
 	void init_vertices(Button& b, VertexArray& b_VAO, float(&vert)[20], float x, float y, float tex_left, float tex_bottom, float tex_width, float tex_height);
 	
 	
-
+	std::vector<char> menu = {
+		//   1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20 
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 1 
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 2
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 3
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 4
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 5
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 6
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 7
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 8
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 9
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 10
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 11
+		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 12
+	};
 	std::vector<char> level1 = {
 		//   1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20 
 		'-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', // 1 

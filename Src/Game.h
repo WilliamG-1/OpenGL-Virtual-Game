@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
+#include <math.h>
 #include "Window.h"
 #include "Shader.h"
 #include "Renderer.h"
@@ -65,13 +66,17 @@ private:
 	float playerMiddle;
 
 	bool facing_right = true;
-
+	bool dead = false;
+	bool win_state = false;
 	float leftBound = (screenWidth / 2) - (screenWidth /2 ) * 0.1; // Left threshold for screen to begin scrolling
 	float rightBound = (screenWidth / 2) + (screenWidth / 2) * 0.1;// Right threshold
 	float level_displacement = 0.0f;
 
 	float winStateTimer = 0.0f;
-	
+	float deathStateTimer = 0.0f;
+	float deathColor = 1.0f;
+	float opacityValue = 1.0f;
+	float rotate_amount = 0.0f;
 	bool cancollideleftrightlol = true;
 
 	float leftRightMove = 0.0f;
@@ -104,8 +109,9 @@ private:
 	void init_vertices(Entity& e, VertexArray& e_VAO, float (&vert)[20],float x, float y, float texture_x, float texture_y, float tex_right, float tex_top);
 	void init_vertices(Fruit& f, VertexArray& e_VAO, float(&vert)[20], float x, float y, float texture_x, float texture_y, float tex_right, float tex_top);
 	
+	void update_button(Button& button, VertexArray& button_vao, float textureSlot);
 
-	void update_player(GameState& gs, VertexArray& player_vao, Level& level);
+	void update_player(GameState& gs, VertexArray& player_vao, Level& level, bool physics = true);
 	void do_player_entity_collisions();
 	void do_x_collisions(GameState& gs, Level& level);
 	void do_y_collisions(GameState& gs, Level& level);
@@ -124,12 +130,15 @@ private:
 	void do_slime_move_animation(int frames, float& counter, float textureStride);
 
 	void do_win_animation(Trophy& trophy);
+	void do_player_death();
 
+	void update_tiles(Level& level, VertexArray& background_vao, VertexArray& grass_vao);
+	void do_tile_animations();
 	// Old Stuff Lol
 	void buffer_next_frame(VertexArray& vao, Texture& texture, float(&vert)[20], float space = 11 / 384);
 	void init_enemy_texture(VertexArray& enemy_vao, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkingVector, std::vector<std::unique_ptr<Texture>>& runningVector, unsigned int idleFrames, unsigned int walkingFrames, unsigned int runningFrames, const std::string& idlePath, const std::string& walkPath, const std::string& runningPath);
 	void init_fruit_texture(VertexArray& fruit_vao, std::vector<std::unique_ptr<Texture>>& fruitVector, unsigned int spriteCount, const std::string& path);
-	void update_tiles(Level& level, VertexArray& background_vao, VertexArray& grass_vao);
+	
 
 	void update_pig(Pig& pig, VertexArray& pig_vao, Fruit& fruit, float& walk_frame, float& run_frame);
 	void do_pig_animations(Pig& p, std::vector<std::unique_ptr<Texture>>& idleVector, std::vector<std::unique_ptr<Texture>>& walkVector, std::vector<std::unique_ptr<Texture>>& runningVector, float& currentFrame);
@@ -139,6 +148,7 @@ private:
 
 	void update_texture_frame(float& variable, float dt, float max_value);
 	void update_dt();
+	void reset_variables();
 	// Temporary stuff lol for testing
 
 
@@ -148,7 +158,8 @@ private:
 	float currentTileX = 0.0f;
 	float tileDisplacement = 0.0f;
 	float lstTileX = 0.0f;
-
+	float buttonCTR = 0.85f;
+	int sign = 1;
 	bool blending = true;
 	bool pressed = false;
 };
