@@ -15,5 +15,7 @@ Includes Rock Dude that acts as an elevator!
 Pig that has a unique temper...
 ![Alt text](Screenshots/Level2.png?raw=true "Title")
 
+Assets used: https://pixelfrog-assets.itch.io/pixel-adventure-1
+
 Continously adding updates to the game!
 Current Version 0.5 Beta :D
